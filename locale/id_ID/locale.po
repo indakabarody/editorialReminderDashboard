@@ -1,0 +1,529 @@
+#
+# plugins/generic/editorialReminderDashboard/locale/id_ID/locale.po
+#
+# Copyright (c) 2026 Indaka Barody
+# Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+#
+# Localization strings for the Editorial Reminder Dashboard plugin (id_ID).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: editorialReminderDashboard 1.0.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-06T09:30:00+07:00\n"
+"PO-Revision-Date: 2026-11-06T09:30:00+07:00\n"
+"Last-Translator: Indaka Barody\n"
+"Language-Team: Indonesian\n"
+"Language: id_ID\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.editorialReminderDashboard.displayName"
+msgstr "Editorial Reminder Dashboard"
+
+msgid "plugins.generic.editorialReminderDashboard.description"
+msgstr "Memantau artikel aktif di tahap Review dan Copyediting berdasarkan aturan hari kerja, Target Issue, dashboard per jurnal dan rumah jurnal, serta ekspor Excel/CSV/PDF."
+
+msgid "plugins.generic.editorialReminderDashboard.menu.title"
+msgstr "Editorial Reminder"
+
+msgid "plugins.generic.editorialReminderDashboard.menu.journalDashboard"
+msgstr "Dashboard Jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.menu.siteDashboard"
+msgstr "Ringkasan Seluruh Jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.menu.siteDashboardFull"
+msgstr "Editorial Reminder – Ringkasan Seluruh Jurnal (Rumah Jurnal)"
+
+msgid "plugins.generic.editorialReminderDashboard.action.openDashboard"
+msgstr "Buka Dashboard"
+
+msgid "plugins.generic.editorialReminderDashboard.action.openJournalDashboard"
+msgstr "Buka dashboard"
+
+msgid "plugins.generic.editorialReminderDashboard.action.viewSiteDashboard"
+msgstr "Ringkasan Seluruh Jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.action.manageSettings"
+msgstr "Pengaturan"
+
+msgid "plugins.generic.editorialReminderDashboard.action.notificationPrefs"
+msgstr "Notifikasi"
+
+msgid "plugins.generic.editorialReminderDashboard.action.toggleDetails"
+msgstr "Tampilkan rincian reviewer dan riwayat round"
+
+msgid "plugins.generic.editorialReminderDashboard.bannerSubtitle"
+msgstr "Editorial Reminder"
+
+msgid "plugins.generic.editorialReminderDashboard.journalHeading"
+msgstr "Editorial Reminder – {$journal}"
+
+msgid "plugins.generic.editorialReminderDashboard.notice.sectionEditorScope"
+msgstr "Menampilkan artikel yang ditugaskan kepada Anda"
+
+msgid "plugins.generic.editorialReminderDashboard.card.monitoredJournals"
+msgstr "Jurnal dipantau"
+
+msgid "plugins.generic.editorialReminderDashboard.card.monitoredArticles"
+msgstr "Artikel dipantau"
+
+msgid "plugins.generic.editorialReminderDashboard.status.normal"
+msgstr "Normal"
+
+msgid "plugins.generic.editorialReminderDashboard.status.almostDue"
+msgstr "Hampir due"
+
+msgid "plugins.generic.editorialReminderDashboard.status.overdue"
+msgstr "Terlambat"
+
+msgid "plugins.generic.editorialReminderDashboard.status.noTarget"
+msgstr "Belum ada target"
+
+msgid "plugins.generic.editorialReminderDashboard.tab.all"
+msgstr "Semua ({$count})"
+
+msgid "plugins.generic.editorialReminderDashboard.tab.review"
+msgstr "Review ({$count})"
+
+msgid "plugins.generic.editorialReminderDashboard.tab.copyediting"
+msgstr "Copyediting ({$count})"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.stage"
+msgstr "Tahap"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.stageAll"
+msgstr "Tahap: semua"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.status"
+msgstr "Status"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.statusAll"
+msgstr "Status: semua"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.editor"
+msgstr "Editor"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.editorAll"
+msgstr "Editor: semua"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.issue"
+msgstr "Issue"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.issueAll"
+msgstr "Issue: semua"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.sort"
+msgstr "Urutkan"
+
+msgid "plugins.generic.editorialReminderDashboard.filter.searchPlaceholder"
+msgstr "Cari kode atau judul..."
+
+msgid "plugins.generic.editorialReminderDashboard.sort.mostUrgent"
+msgstr "Urutkan: paling mendesak"
+
+msgid "plugins.generic.editorialReminderDashboard.sort.dueDateAsc"
+msgstr "Urutkan: due date terdekat"
+
+msgid "plugins.generic.editorialReminderDashboard.sort.startDateAsc"
+msgstr "Urutkan: tanggal mulai terlama"
+
+msgid "plugins.generic.editorialReminderDashboard.sort.codeAsc"
+msgstr "Urutkan: kode artikel"
+
+msgid "plugins.generic.editorialReminderDashboard.siteSort.mostOverdue"
+msgstr "Urutkan: paling banyak terlambat"
+
+msgid "plugins.generic.editorialReminderDashboard.siteSort.mostAlmostDue"
+msgstr "Urutkan: paling banyak hampir due"
+
+msgid "plugins.generic.editorialReminderDashboard.siteSort.mostArticles"
+msgstr "Urutkan: jumlah artikel terbanyak"
+
+msgid "plugins.generic.editorialReminderDashboard.siteSort.nameAsc"
+msgstr "Urutkan: nama jurnal (A–Z)"
+
+msgid "plugins.generic.editorialReminderDashboard.export.excel"
+msgstr "Ekspor Excel"
+
+msgid "plugins.generic.editorialReminderDashboard.export.csv"
+msgstr "CSV"
+
+msgid "plugins.generic.editorialReminderDashboard.export.pdf"
+msgstr "PDF"
+
+msgid "plugins.generic.editorialReminderDashboard.export.siteRecapExcel"
+msgstr "Ekspor rekap (Excel)"
+
+msgid "plugins.generic.editorialReminderDashboard.export.siteAllCsv"
+msgstr "Detail semua artikel (CSV)"
+
+msgid "plugins.generic.editorialReminderDashboard.export.reportTitle"
+msgstr "Judul Laporan"
+
+msgid "plugins.generic.editorialReminderDashboard.export.journal"
+msgstr "Jurnal / Lingkup"
+
+msgid "plugins.generic.editorialReminderDashboard.export.exportedAt"
+msgstr "Waktu Ekspor"
+
+msgid "plugins.generic.editorialReminderDashboard.export.activeFilters"
+msgstr "Filter Aktif"
+
+msgid "plugins.generic.editorialReminderDashboard.export.exportedBy"
+msgstr "Diekspor Oleh"
+
+msgid "plugins.generic.editorialReminderDashboard.export.articlesSheetTitle"
+msgstr "Daftar Artikel"
+
+msgid "plugins.generic.editorialReminderDashboard.export.reviewerSheetTitle"
+msgstr "Rincian Reviewer"
+
+msgid "plugins.generic.editorialReminderDashboard.export.siteRecapSheetTitle"
+msgstr "Rekap Jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.table.code"
+msgstr "KODE"
+
+msgid "plugins.generic.editorialReminderDashboard.table.title"
+msgstr "JUDUL"
+
+msgid "plugins.generic.editorialReminderDashboard.table.stage"
+msgstr "TAHAP"
+
+msgid "plugins.generic.editorialReminderDashboard.table.editor"
+msgstr "EDITOR"
+
+msgid "plugins.generic.editorialReminderDashboard.table.startDate"
+msgstr "MULAI"
+
+msgid "plugins.generic.editorialReminderDashboard.table.dueDate"
+msgstr "DUE"
+
+msgid "plugins.generic.editorialReminderDashboard.table.timeRemaining"
+msgstr "SISA WAKTU"
+
+msgid "plugins.generic.editorialReminderDashboard.table.status"
+msgstr "STATUS"
+
+msgid "plugins.generic.editorialReminderDashboard.table.delayCause"
+msgstr "Penyebab Keterlambatan"
+
+msgid "plugins.generic.editorialReminderDashboard.table.empty"
+msgstr "Tidak ada artikel yang sesuai dengan filter yang dipilih."
+
+msgid "plugins.generic.editorialReminderDashboard.stage.reviewRound"
+msgstr "Review · Round {$round}"
+
+msgid "plugins.generic.editorialReminderDashboard.stage.copyediting"
+msgstr "Copyediting"
+
+msgid "plugins.generic.editorialReminderDashboard.stage.copyeditingWithIssue"
+msgstr "Copyediting · {$issue}"
+
+msgid "plugins.generic.editorialReminderDashboard.unassignedEditor"
+msgstr "Belum ditugaskan"
+
+msgid "plugins.generic.editorialReminderDashboard.time.remainingWorkingDays"
+msgstr "Sisa {$days} hk"
+
+msgid "plugins.generic.editorialReminderDashboard.time.overdueWorkingDays"
+msgstr "Lewat {$days} hk"
+
+msgid "plugins.generic.editorialReminderDashboard.time.remainingCalendarDays"
+msgstr "Sisa {$days} hari"
+
+msgid "plugins.generic.editorialReminderDashboard.time.overdueTargetDay"
+msgstr "Lewat H+{$days}"
+
+msgid "plugins.generic.editorialReminderDashboard.time.dueToday"
+msgstr "Jatuh tempo hari ini"
+
+msgid "plugins.generic.editorialReminderDashboard.unit.workingDays"
+msgstr "hari kerja (hk)"
+
+msgid "plugins.generic.editorialReminderDashboard.delayCause.waitingReviewer"
+msgstr "Menunggu reviewer"
+
+msgid "plugins.generic.editorialReminderDashboard.delayCause.waitingEditorDecision"
+msgstr "Menunggu keputusan editor"
+
+msgid "plugins.generic.editorialReminderDashboard.delayCause.noReviewerAssigned"
+msgstr "Reviewer belum ditugaskan"
+
+msgid "plugins.generic.editorialReminderDashboard.delayCause.waitingAuthorRevision"
+msgstr "Menunggu revisi penulis (hitungan dijeda)"
+
+msgid "plugins.generic.editorialReminderDashboard.delayCause.noTargetIssue"
+msgstr "Target Issue belum ditetapkan"
+
+msgid "plugins.generic.editorialReminderDashboard.delayCause.copyeditingTarget"
+msgstr "Mendekati atau melewati tanggal target terbit issue (H)"
+
+msgid "plugins.generic.editorialReminderDashboard.detail.reviewersHeading"
+msgstr "Rincian per Reviewer (Round {$round})"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.name"
+msgstr "Nama Reviewer"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.anonymous"
+msgstr "Reviewer"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.dateAssigned"
+msgstr "Tanggal Di-assign"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.dateResponseDue"
+msgstr "Batas Respons"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.dateDue"
+msgstr "Batas Review"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.dateCompleted"
+msgstr "Tanggal Selesai"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.status"
+msgstr "Status"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewer.ojsOverdue"
+msgstr "Overdue OJS"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewerStatus.awaitingResponse"
+msgstr "Belum merespons"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewerStatus.accepted"
+msgstr "Menerima"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewerStatus.completed"
+msgstr "Selesai"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewerStatus.declined"
+msgstr "Menolak"
+
+msgid "plugins.generic.editorialReminderDashboard.reviewerStatus.cancelled"
+msgstr "Dibatalkan"
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"
+msgstr "Pilih target issue"
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.targetIssueHeading"
+msgstr "Target Issue Copyediting"
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.changeLogHeading"
+msgstr "Riwayat Perubahan Target Issue"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.heading"
+msgstr "Riwayat Round Review"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.cumulativeDays"
+msgstr "Total Durasi Kumulatif Seluruh Round"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.empty"
+msgstr "Belum ada riwayat round sebelumnya."
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.round"
+msgstr "Round"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.endDate"
+msgstr "Tanggal Selesai"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.duration"
+msgstr "Durasi"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.finalStatus"
+msgstr "Status Akhir"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.completedOnTime"
+msgstr "Selesai tepat waktu ({$days} hk)"
+
+msgid "plugins.generic.editorialReminderDashboard.roundHistory.completedOverdue"
+msgstr "Selesai terlambat ({$days} hk)"
+
+msgid "plugins.generic.editorialReminderDashboard.footer.rulesSummary"
+msgstr "Aturan: Round 1 = {$round1Limit} hari kerja (hk), Round 2+ = {$round2Limit} hk, Copyediting = reminder H-{$copyeditingWarning} sebelum akhir bulan issue · Ekspor mengikuti filter yang aktif"
+
+msgid "plugins.generic.editorialReminderDashboard.site.publishingHouse"
+msgstr "Rumah Jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.site.bannerSubtitle"
+msgstr "Editorial Reminder · Semua Jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.site.heading"
+msgstr "Ringkasan Seluruh Jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.siteTable.journal"
+msgstr "JURNAL"
+
+msgid "plugins.generic.editorialReminderDashboard.siteTable.articles"
+msgstr "ARTIKEL"
+
+msgid "plugins.generic.editorialReminderDashboard.siteTable.distribution"
+msgstr "SEBARAN STATUS"
+
+msgid "plugins.generic.editorialReminderDashboard.site.mostUrgentHeading"
+msgstr "Paling mendesak lintas jurnal"
+
+msgid "plugins.generic.editorialReminderDashboard.site.footerSummary"
+msgstr "{$journalCount} jurnal ditampilkan · Tampilan ini aktif di level site dan hanya untuk Administrator/Direktur"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.modalTitle"
+msgstr "Pengaturan Editorial Reminder"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.globalTitle"
+msgstr "Pengaturan Global Editorial Reminder"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.tabRules"
+msgstr "Batas Waktu & Notifikasi"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.tabIssues"
+msgstr "Tanggal Target Issue (H)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.tabHolidays"
+msgstr "Hari Libur & Cuti Bersama"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.tabAudit"
+msgstr "Jejak Audit"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.round1Limit"
+msgstr "Batas Waktu Review Round 1 (hari kerja)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.round1LimitDesc"
+msgstr "Maksimal hari kerja untuk Round 1 (rentang yang diizinkan: 14–21 hari kerja, default: 21)."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.round2Limit"
+msgstr "Batas Waktu Review Round 2+ (hari kerja)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.round2LimitDesc"
+msgstr "Maksimal hari kerja per round berikutnya (default: 7)."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.round1Warning"
+msgstr "Ambang Peringatan Hampir Due Round 1 (hari kerja)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.round2Warning"
+msgstr "Ambang Peringatan Hampir Due Round 2+ (hari kerja)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.copyeditingWarning"
+msgstr "Ambang Reminder Copyediting (hari kalender sebelum H)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.copyeditingWarningDesc"
+msgstr "Jumlah hari kalender sebelum tanggal target terbit H untuk memunculkan status 'Hampir due' (default: 10 untuk H-10)."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.timezone"
+msgstr "Zona Waktu Perhitungan"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.directorUsernames"
+msgstr "Username atau ID Pengguna Direktur / Direksi"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.directorUsernamesDesc"
+msgstr "Daftar username atau user ID (dipisahkan koma) yang diberi hak lihat dan ekspor pada Dashboard Rumah Jurnal."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.enableDailyDigest"
+msgstr "Aktifkan email ringkasan harian (digest) ke Editor / Section Editor untuk artikel hampir due dan terlambat"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.enableWeeklyDigest"
+msgstr "Aktifkan email ringkasan mingguan ke Journal Manager dan Direksi"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.userOptOut"
+msgstr "Matikan notifikasi email ringkasan untuk akun saya"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.issueTargetHelp"
+msgstr "Tetapkan tanggal target terbit (H) untuk setiap issue yang belum terbit. Nilai awal adalah hari terakhir bulan issue tersebut."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.noUnpublishedIssues"
+msgstr "Belum ada issue yang belum terbit pada jurnal ini."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.targetDateH"
+msgstr "Tanggal Target Terbit (H)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.holidayHelp"
+msgstr "Tanggal pada tabel hari libur nasional dan cuti bersama tidak dihitung sebagai hari kerja selain Sabtu dan Minggu."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.holidayDescriptionPlaceholder"
+msgstr "Keterangan hari libur atau cuti bersama..."
+
+msgid "plugins.generic.editorialReminderDashboard.settings.holidayGlobal"
+msgstr "Berlaku untuk seluruh jurnal (Global)"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.addHoliday"
+msgstr "Tambah Hari Libur"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.noHolidays"
+msgstr "Tabel hari libur masih kosong (hanya Sabtu dan Minggu yang dikecualikan)."
+
+msgid "plugins.generic.editorialReminderDashboard.digest.taskName"
+msgstr "Tugas Pengiriman Email Ringkasan Editorial Reminder"
+
+msgid "plugins.generic.editorialReminderDashboard.error.accessDenied"
+msgstr "Anda tidak memiliki hak akses untuk membuka halaman Editorial Reminder Dashboard ini."
+
+msgid "plugins.generic.editorialReminderDashboard.error.invalidDate"
+msgstr "Format tanggal tidak valid. Gunakan format YYYY-MM-DD."
+
+msgid "plugins.generic.editorialReminderDashboard.error.invalidHoliday"
+msgstr "Harap isi tanggal dan keterangan hari libur dengan benar."
+
+msgid "plugins.generic.editorialReminderDashboard.unit.workingDaysShort"
+msgstr "hk"
+
+msgid "plugins.generic.editorialReminderDashboard.digest.dailySubject"
+msgstr "[Editorial Reminder] Ringkasan Harian - {$journal}"
+
+msgid "plugins.generic.editorialReminderDashboard.digest.weeklySubject"
+msgstr "[Editorial Reminder] Rekap Mingguan - {$journal}"
+
+msgid "plugins.generic.editorialReminderDashboard.digest.journalLabel"
+msgstr "Jurnal:"
+
+msgid "plugins.generic.editorialReminderDashboard.digest.dateLabel"
+msgstr "Tanggal:"
+
+msgid "plugins.generic.editorialReminderDashboard.digest.actionRequiredCount"
+msgstr "Jumlah artikel perlu tindak lanjut:"
+
+msgid "plugins.generic.editorialReminderDashboard.export.page"
+msgstr "Hal"
+
+msgid "plugins.generic.editorialReminderDashboard.export.total"
+msgstr "Total"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.holidayGlobalTag"
+msgstr "Global"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.1"
+msgstr "Jan"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.2"
+msgstr "Feb"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.3"
+msgstr "Mar"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.4"
+msgstr "Apr"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.5"
+msgstr "Mei"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.6"
+msgstr "Jun"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.7"
+msgstr "Jul"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.8"
+msgstr "Agu"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.9"
+msgstr "Sep"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.10"
+msgstr "Okt"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.11"
+msgstr "Nov"
+
+msgid "plugins.generic.editorialReminderDashboard.month.short.12"
+msgstr "Des"
+
+
