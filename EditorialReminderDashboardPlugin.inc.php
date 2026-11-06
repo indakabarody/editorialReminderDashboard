@@ -39,38 +39,127 @@ class EditorialReminderDashboardPlugin extends GenericPlugin
 
             // Register scheduled task for daily/weekly email digests
             HookRegistry::register('AcronPlugin::parseCronTab', [$this, 'callbackParseCronTab']);
+
+            // Automatically enable for newly created journals
+            HookRegistry::register('Context::add', [$this, 'callbackContextAdd']);
         }
 
         return $success;
     }
 
     /**
+     * Determine whether or not this plugin is currently enabled.
+     * When enabled in any journal or at site level, it is treated as enabled for all journals.
+     *
+     * @param int|null $contextId
+     * @return bool
+     */
+    public function getEnabled($contextId = null)
+    {
+        if ($contextId === null) {
+            $contextId = $this->getCurrentContextId();
+            if ($this->isSitePlugin()) {
+                $contextId = 0;
+            }
+        }
+
+        // Direct context check
+        $directSetting = parent::getEnabled($contextId);
+        if (!empty($directSetting)) {
+            return true;
+        }
+
+        // Site-level check (context 0)
+        if ($contextId !== 0) {
+            $siteSetting = parent::getEnabled(0);
+            if (!empty($siteSetting)) {
+                return true;
+            }
+        }
+
+        // Check if enabled in any journal or context in plugin_settings
+        try {
+            $enabledAnywhere = Capsule::table('plugin_settings')->where('plugin_name', '=', strtolower($this->getName()))->where('setting_name', '=', 'enabled')->where('setting_value', '=', '1')->exists();
+
+            if ($enabledAnywhere) {
+                // Synchronize all journals so every context has enabled = 1 in plugin_settings
+                $this->_syncEnabledStateAcrossAllJournals(true);
+                return true;
+            }
+        } catch (Exception $e) {
+            // Database not accessible yet
+        }
+
+        return false;
+    }
+
+    /**
+     * Set whether or not this plugin is currently enabled.
+     * When enabled in any single journal, automatically enable for all journals and site-wide.
+     * When disabled, disable across all journals and site-wide.
+     *
+     * @param bool $enabled
+     * @return void
+     */
+    public function setEnabled($enabled)
+    {
+        parent::setEnabled($enabled);
+        $this->_syncEnabledStateAcrossAllJournals((bool) $enabled);
+    }
+
+    /**
+     * Synchronize the enabled setting across all journals and site-level context.
+     *
+     * @param bool $enabled
+     * @return void
+     */
+    protected function _syncEnabledStateAcrossAllJournals($enabled)
+    {
+        $this->updateSetting(0, 'enabled', $enabled, 'bool');
+
+        try {
+            $journalDao = Application::getContextDAO();
+            $journals = $journalDao->getAll(true);
+            while ($journal = $journals->next()) {
+                $this->updateSetting((int) $journal->getId(), 'enabled', $enabled, 'bool');
+            }
+        } catch (Exception $e) {
+            try {
+                $journalIds = Capsule::table('journals')->pluck('journal_id');
+                foreach ($journalIds as $jId) {
+                    $this->updateSetting((int) $jId, 'enabled', $enabled, 'bool');
+                }
+            } catch (Exception $e2) {
+                error_log('EditorialReminderDashboardPlugin::_syncEnabledStateAcrossAllJournals error: ' . $e2->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Automatically enable the plugin for newly created journals if currently active.
+     *
+     * @param string $hookName
+     * @param array $args
+     * @return bool
+     */
+    public function callbackContextAdd($hookName, $args)
+    {
+        $context = isset($args[0]) ? $args[0] : null;
+        if ($context && $this->getEnabled()) {
+            $this->updateSetting((int) $context->getId(), 'enabled', true, 'bool');
+        }
+        return false;
+    }
+
+    /**
      * Determine whether the plugin is active in the current context or site-wide.
-     * When accessed at the site level (contextId = 0), returns true if enabled site-wide OR in at least one journal.
      *
      * @param int|null $contextId
      * @return bool
      */
     public function isPluginActive($contextId = null)
     {
-        if ($this->getEnabled($contextId)) {
-            return true;
-        }
-
-        $request = Application::get()->getRequest();
-        $context = $request ? $request->getContext() : null;
-        if (!$context) {
-            try {
-                $enabledAnywhere = Capsule::table('plugin_settings')->where('plugin_name', '=', strtolower($this->getName()))->where('setting_name', '=', 'enabled')->where('setting_value', '=', '1')->exists();
-                if ($enabledAnywhere) {
-                    return true;
-                }
-            } catch (Exception $e) {
-                // Ignore DB error during installation
-            }
-        }
-
-        return false;
+        return $this->getEnabled($contextId);
     }
 
     /**
