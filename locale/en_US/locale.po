@@ -525,3 +525,7 @@ msgstr "Nov"
 
 msgid "plugins.generic.editorialReminderDashboard.month.short.12"
 msgstr "Dec"
+
+msgid "plugins.generic.editorialReminderDashboard.audit.details"
+msgstr "Details"
+

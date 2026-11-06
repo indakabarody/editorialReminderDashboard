@@ -178,5 +178,6 @@
 	<message key="plugins.generic.editorialReminderDashboard.month.short.10">Okt</message>
 	<message key="plugins.generic.editorialReminderDashboard.month.short.11">Nov</message>
 	<message key="plugins.generic.editorialReminderDashboard.month.short.12">Des</message>
+	<message key="plugins.generic.editorialReminderDashboard.audit.details">Detail</message>
 </locale>
 

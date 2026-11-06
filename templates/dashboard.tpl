@@ -583,7 +583,7 @@
 										<th>{translate key="common.date"}</th>
 										<th>{translate key="common.user"}</th>
 										<th>{translate key="common.action"}</th>
-										<th>{translate key="common.details"}</th>
+										<th>{translate key="plugins.generic.editorialReminderDashboard.audit.details"}</th>
 									</tr>
 								</thead>
 								<tbody>
