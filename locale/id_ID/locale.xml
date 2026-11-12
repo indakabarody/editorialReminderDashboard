@@ -74,7 +74,9 @@
 	<message key="plugins.generic.editorialReminderDashboard.table.status">STATUS</message>
 	<message key="plugins.generic.editorialReminderDashboard.table.delayCause">Penyebab Keterlambatan</message>
 	<message key="plugins.generic.editorialReminderDashboard.table.empty">Tidak ada artikel yang sesuai dengan filter yang dipilih.</message>
+	<message key="plugins.generic.editorialReminderDashboard.stage.review">Review</message>
 	<message key="plugins.generic.editorialReminderDashboard.stage.reviewRound">Review · Round {$round}</message>
+	<message key="plugins.generic.editorialReminderDashboard.roundNumber">Round {$round}</message>
 	<message key="plugins.generic.editorialReminderDashboard.stage.copyediting">Copyediting</message>
 	<message key="plugins.generic.editorialReminderDashboard.stage.copyeditingWithIssue">Copyediting · {$issue}</message>
 	<message key="plugins.generic.editorialReminderDashboard.unassignedEditor">Belum ditugaskan</message>

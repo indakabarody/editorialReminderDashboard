@@ -214,8 +214,14 @@ msgstr "Delay Cause"
 msgid "plugins.generic.editorialReminderDashboard.table.empty"
 msgstr "No monitored articles match the selected filter criteria."
 
+msgid "plugins.generic.editorialReminderDashboard.stage.review"
+msgstr "Review"
+
 msgid "plugins.generic.editorialReminderDashboard.stage.reviewRound"
 msgstr "Review · Round {$round}"
+
+msgid "plugins.generic.editorialReminderDashboard.roundNumber"
+msgstr "Round {$round}"
 
 msgid "plugins.generic.editorialReminderDashboard.stage.copyediting"
 msgstr "Copyediting"

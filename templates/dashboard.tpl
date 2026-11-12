@@ -285,7 +285,7 @@
 																		<td>{$rev.statusLabel|escape}</td>
 																		<td>
 																			{if $rev.isOjsOverdue}
-																				<span class="er-badge er-badge--overdue">Overdue</span>
+																				<span class="er-badge er-badge--overdue">{translate key="plugins.generic.editorialReminderDashboard.status.overdue"}</span>
 																			{else}
 																				—
 																			{/if}
@@ -361,7 +361,7 @@
 														<tbody>
 															{foreach from=$item.roundHistory item="rh"}
 																<tr>
-																	<td>Round {$rh.round|escape}</td>
+																	<td>{translate key="plugins.generic.editorialReminderDashboard.roundNumber" round=$rh.round}</td>
 																	<td>{$rh.dateStart|escape}</td>
 																	<td>{$rh.dateEnd|escape}</td>
 																	<td>{$rh.workingDays|escape} {translate key="plugins.generic.editorialReminderDashboard.unit.workingDaysShort"}</td>

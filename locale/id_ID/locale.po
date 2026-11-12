@@ -214,8 +214,14 @@ msgstr "Penyebab Keterlambatan"
 msgid "plugins.generic.editorialReminderDashboard.table.empty"
 msgstr "Tidak ada artikel yang sesuai dengan filter yang dipilih."
 
+msgid "plugins.generic.editorialReminderDashboard.stage.review"
+msgstr "Review"
+
 msgid "plugins.generic.editorialReminderDashboard.stage.reviewRound"
 msgstr "Review · Round {$round}"
+
+msgid "plugins.generic.editorialReminderDashboard.roundNumber"
+msgstr "Round {$round}"
 
 msgid "plugins.generic.editorialReminderDashboard.stage.copyediting"
 msgstr "Copyediting"

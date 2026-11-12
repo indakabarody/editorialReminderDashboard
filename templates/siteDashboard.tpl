@@ -72,8 +72,8 @@
 			<div class="er-filters">
 				<select name="stage" class="er-select er-auto-submit" aria-label="{translate key="plugins.generic.editorialReminderDashboard.filter.stage"}">
 					<option value="all" {if $activeFilters.stage == 'all'}selected{/if}>{translate key="plugins.generic.editorialReminderDashboard.filter.stageAll"}</option>
-					<option value="review" {if $activeFilters.stage == 'review'}selected{/if}>Review</option>
-					<option value="copyediting" {if $activeFilters.stage == 'copyediting'}selected{/if}>Copyediting</option>
+					<option value="review" {if $activeFilters.stage == 'review'}selected{/if}>{translate key="plugins.generic.editorialReminderDashboard.stage.review"}</option>
+					<option value="copyediting" {if $activeFilters.stage == 'copyediting'}selected{/if}>{translate key="plugins.generic.editorialReminderDashboard.stage.copyediting"}</option>
 				</select>
 
 				<select name="sort" class="er-select er-auto-submit" aria-label="{translate key="plugins.generic.editorialReminderDashboard.filter.sort"}">

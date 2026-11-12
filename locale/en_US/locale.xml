@@ -74,7 +74,9 @@
 	<message key="plugins.generic.editorialReminderDashboard.table.status">STATUS</message>
 	<message key="plugins.generic.editorialReminderDashboard.table.delayCause">Delay Cause</message>
 	<message key="plugins.generic.editorialReminderDashboard.table.empty">No monitored articles match the selected filter criteria.</message>
+	<message key="plugins.generic.editorialReminderDashboard.stage.review">Review</message>
 	<message key="plugins.generic.editorialReminderDashboard.stage.reviewRound">Review · Round {$round}</message>
+	<message key="plugins.generic.editorialReminderDashboard.roundNumber">Round {$round}</message>
 	<message key="plugins.generic.editorialReminderDashboard.stage.copyediting">Copyediting</message>
 	<message key="plugins.generic.editorialReminderDashboard.stage.copyeditingWithIssue">Copyediting · {$issue}</message>
 	<message key="plugins.generic.editorialReminderDashboard.unassignedEditor">Unassigned</message>
