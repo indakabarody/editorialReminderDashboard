@@ -242,20 +242,23 @@ class EditorialReminderDashboardPlugin extends GenericPlugin
         $service = new EditorialReminderService($this);
         $dao = $service->getDAO();
 
-        $isDirectorOrAdmin = $service->isUserDirectorOrSiteAdmin($user);
         $requestedPage = $router->getRequestedPage($request);
         $requestedOp = $router->getRequestedOp($request);
-
         $menu = (array) $templateMgr->getState('menu');
+
+        $isSiteAdmin = Validation::isSiteAdmin();
 
         if ($context) {
             $access = $dao->getUserContextRoleFlags((int) $user->getId(), (int) $context->getId());
-            if (!$access['isSiteAdmin'] && !$access['isManager'] && !$access['isSubEditor'] && !$isDirectorOrAdmin) {
+            $isManager = !empty($access['isManager']);
+            $isSiteAdmin = $isSiteAdmin || !empty($access['isSiteAdmin']);
+
+            if (!$isSiteAdmin && !$isManager) {
                 return false;
             }
 
             $journalDashUrl = $dispatcher->url($request, ROUTE_PAGE, $context->getPath(), 'editorialReminder');
-            if ($isDirectorOrAdmin) {
+            if ($isSiteAdmin) {
                 $siteDashUrl = $dispatcher->url($request, ROUTE_PAGE, 'index', 'editorialReminder', 'site');
                 $navItem = [
                     'name' => __('plugins.generic.editorialReminderDashboard.menu.title'),
@@ -294,7 +297,7 @@ class EditorialReminderDashboardPlugin extends GenericPlugin
                 $newMenu['editorialReminder'] = $navItem;
             }
             $templateMgr->setState(['menu' => $newMenu]);
-        } elseif ($isDirectorOrAdmin) {
+        } elseif ($isSiteAdmin) {
             $siteDashUrl = $dispatcher->url($request, ROUTE_PAGE, 'index', 'editorialReminder', 'site');
             $menu['editorialReminder'] = [
                 'name' => __('plugins.generic.editorialReminderDashboard.menu.siteDashboard'),
@@ -316,6 +319,9 @@ class EditorialReminderDashboardPlugin extends GenericPlugin
      */
     public function callbackAdminSiteManagement($hookName, $args)
     {
+        if (!Validation::isSiteAdmin()) {
+            return false;
+        }
         $output = &$args[2];
         $request = Application::get()->getRequest();
         $dispatcher = $request->getDispatcher();
@@ -383,6 +389,25 @@ class EditorialReminderDashboardPlugin extends GenericPlugin
      */
     public function manage($args, $request)
     {
+        $user = $request->getUser();
+        if (!$user) {
+            return parent::manage($args, $request);
+        }
+
+        $context = $request->getContext();
+        $isSiteAdmin = Validation::isSiteAdmin();
+        $isManager = false;
+        if ($context) {
+            $this->import('classes.EditorialReminderService');
+            $service = new EditorialReminderService($this);
+            $flags = $service->getDAO()->getUserContextRoleFlags((int) $user->getId(), (int) $context->getId());
+            $isManager = !empty($flags['isManager']);
+        }
+
+        if (!$isSiteAdmin && !$isManager) {
+            return new JSONMessage(false, __('plugins.generic.editorialReminderDashboard.error.accessDenied'));
+        }
+
         switch ($request->getUserVar('verb')) {
             case 'settings':
                 $this->import('EditorialReminderSettingsForm');

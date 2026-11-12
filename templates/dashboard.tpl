@@ -32,11 +32,7 @@
 				</a>
 			{/if}
 			<button type="button" class="er-btn er-btn--banner" id="erOpenSettingsBtn">
-				{if $access.canManageSettings}
-					{translate key="plugins.generic.editorialReminderDashboard.action.manageSettings"}
-				{else}
-					{translate key="plugins.generic.editorialReminderDashboard.action.notificationPrefs"}
-				{/if}
+				{translate key="plugins.generic.editorialReminderDashboard.action.manageSettings"}
 			</button>
 		</div>
 	</div>
@@ -46,11 +42,6 @@
 			<h1 class="er-title">
 				{translate key="plugins.generic.editorialReminderDashboard.journalHeading" journal=$journalAcronym|escape}
 			</h1>
-			{if $access.isSectionEditorOnly}
-				<span class="er-role-pill">
-					{translate key="plugins.generic.editorialReminderDashboard.notice.sectionEditorScope"}
-				</span>
-			{/if}
 		</div>
 
 		{* Summary Cards *}
@@ -140,9 +131,20 @@
 				<select name="issueId" class="er-select er-auto-submit" aria-label="{translate key="plugins.generic.editorialReminderDashboard.filter.issue"}">
 					<option value="all" {if $activeFilters.issueId == 'all'}selected{/if}>{translate key="plugins.generic.editorialReminderDashboard.filter.issueAll"}</option>
 					<option value="none" {if $activeFilters.issueId == 'none'}selected{/if}>{translate key="plugins.generic.editorialReminderDashboard.status.noTarget"}</option>
-					{foreach from=$unpublishedIssues key="issId" item="iss"}
-						<option value="{$issId|escape}" {if $activeFilters.issueId == $issId}selected{/if}>{$iss.shortLabel|escape}</option>
-					{/foreach}
+					{if !empty($futureIssues)}
+						<optgroup label="{translate key="editor.issues.futureIssues"}">
+							{foreach from=$futureIssues key="issId" item="iss"}
+								<option value="{$issId|escape}" {if $activeFilters.issueId == $issId}selected{/if}>{$iss.shortLabel|escape}</option>
+							{/foreach}
+						</optgroup>
+					{/if}
+					{if !empty($backIssues)}
+						<optgroup label="{translate key="editor.issues.backIssues"}">
+							{foreach from=$backIssues key="issId" item="iss"}
+								<option value="{$issId|escape}" {if $activeFilters.issueId == $issId}selected{/if}>{$iss.shortLabel|escape}</option>
+							{/foreach}
+						</optgroup>
+					{/if}
 				</select>
 
 				<select name="sort" class="er-select er-auto-submit" aria-label="{translate key="plugins.generic.editorialReminderDashboard.filter.sort"}">
@@ -222,16 +224,38 @@
 								<td class="er-col-date">{$item.dueDateFormatted|escape}</td>
 								<td class="er-col-remaining">
 									{if $item.stageKey == 'copyediting' && $item.status == 'no_target' && $access.canEditTargetIssue}
-										<select class="er-select er-select--inline er-target-issue-select"
-											data-submission-id="{$item.id|escape}"
-											aria-label="{translate key="plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"}">
-											<option value="none">{translate key="plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"}</option>
-											{foreach from=$unpublishedIssues key="issId" item="iss"}
-												<option value="{$issId|escape}" {if $item.targetIssueId == $issId}selected{/if}>
-													{$iss.shortLabel|escape} ({$iss.targetDate|escape})
-												</option>
-											{/foreach}
-										</select>
+										{if empty($allIssues)}
+											<div class="er-no-issues-notice">
+												<span class="er-remaining-text er-remaining-text--no_target">{translate key="plugins.generic.editorialReminderDashboard.status.noTarget"}</span>
+												<a href="{$futureIssuesUrl|escape}" class="er-btn--link-inline" target="_blank" title="{translate key="plugins.generic.editorialReminderDashboard.copyediting.createFutureIssueHint"}">
+													+ {translate key="plugins.generic.editorialReminderDashboard.copyediting.createFutureIssue"}
+												</a>
+											</div>
+										{else}
+											<select class="er-select er-select--inline er-target-issue-select"
+												data-submission-id="{$item.id|escape}"
+												aria-label="{translate key="plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"}">
+												<option value="none">{translate key="plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"}</option>
+												{if !empty($futureIssues)}
+													<optgroup label="{translate key="editor.issues.futureIssues"}">
+														{foreach from=$futureIssues key="issId" item="iss"}
+															<option value="{$issId|escape}" {if $item.targetIssueId == $issId}selected{/if}>
+																{$iss.shortLabel|escape} ({$iss.targetDate|escape})
+															</option>
+														{/foreach}
+													</optgroup>
+												{/if}
+												{if !empty($backIssues)}
+													<optgroup label="{translate key="editor.issues.backIssues"}">
+														{foreach from=$backIssues key="issId" item="iss"}
+															<option value="{$issId|escape}" {if $item.targetIssueId == $issId}selected{/if}>
+																{$iss.shortLabel|escape} ({$iss.targetDate|escape})
+															</option>
+														{/foreach}
+													</optgroup>
+												{/if}
+											</select>
+										{/if}
 									{else}
 										<span class="er-remaining-text er-remaining-text--{$item.status|escape}">
 											{$item.timeRemainingText|escape}
@@ -307,16 +331,36 @@
 															<label for="er-detail-issue-{$item.id|escape}">
 																{translate key="plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"}:
 															</label>
-															<select id="er-detail-issue-{$item.id|escape}"
-																class="er-select er-target-issue-select"
-																data-submission-id="{$item.id|escape}">
-																<option value="none">— {translate key="plugins.generic.editorialReminderDashboard.status.noTarget"} —</option>
-																{foreach from=$unpublishedIssues key="issId" item="iss"}
-																	<option value="{$issId|escape}" {if $item.targetIssueId == $issId}selected{/if}>
-																		{$iss.identification|escape} (H: {$iss.targetDate|escape})
-																	</option>
-																{/foreach}
-															</select>
+															{if empty($allIssues)}
+																<p class="er-detail-empty">
+																	{translate key="plugins.generic.editorialReminderDashboard.copyediting.noUnpublishedIssuesHelp"}
+																	<a href="{$futureIssuesUrl|escape}" target="_blank" class="er-link">{translate key="plugins.generic.editorialReminderDashboard.copyediting.openFutureIssues"}</a>
+																</p>
+															{else}
+																<select id="er-detail-issue-{$item.id|escape}"
+																	class="er-select er-target-issue-select"
+																	data-submission-id="{$item.id|escape}">
+																	<option value="none">— {translate key="plugins.generic.editorialReminderDashboard.status.noTarget"} —</option>
+																	{if !empty($futureIssues)}
+																		<optgroup label="{translate key="editor.issues.futureIssues"}">
+																			{foreach from=$futureIssues key="issId" item="iss"}
+																				<option value="{$issId|escape}" {if $item.targetIssueId == $issId}selected{/if}>
+																					{$iss.identification|escape} (H: {$iss.targetDate|escape})
+																				</option>
+																			{/foreach}
+																		</optgroup>
+																	{/if}
+																	{if !empty($backIssues)}
+																		<optgroup label="{translate key="editor.issues.backIssues"}">
+																			{foreach from=$backIssues key="issId" item="iss"}
+																				<option value="{$issId|escape}" {if $item.targetIssueId == $issId}selected{/if}>
+																					{$iss.identification|escape} (H: {$iss.targetDate|escape})
+																				</option>
+																			{/foreach}
+																		</optgroup>
+																	{/if}
+																</select>
+															{/if}
 														</div>
 													{/if}
 
@@ -487,25 +531,36 @@
 					{* Tab 2: Issue Target Publication Dates H *}
 					<div class="er-modal__pane" data-modal-pane="issues" hidden>
 						<p class="er-modal__help">{translate key="plugins.generic.editorialReminderDashboard.settings.issueTargetHelp"}</p>
-						{if empty($unpublishedIssues)}
-							<p class="er-detail-empty">{translate key="plugins.generic.editorialReminderDashboard.settings.noUnpublishedIssues"}</p>
+						{if empty($allIssues)}
+							<p class="er-detail-empty">
+								{translate key="plugins.generic.editorialReminderDashboard.settings.noUnpublishedIssues"}
+								<a href="{$futureIssuesUrl|escape}" target="_blank" class="er-link">{translate key="plugins.generic.editorialReminderDashboard.copyediting.openFutureIssues"}</a>
+							</p>
 						{else}
 							<table class="er-subtable">
 								<thead>
 									<tr>
 										<th>{translate key="plugins.generic.editorialReminderDashboard.filter.issue"}</th>
 										<th>{translate key="plugins.generic.editorialReminderDashboard.settings.targetDateH"}</th>
+										<th>{translate key="common.status"}</th>
 										<th>{translate key="common.action"}</th>
 									</tr>
 								</thead>
 								<tbody>
-									{foreach from=$unpublishedIssues key="issId" item="iss"}
+									{foreach from=$allIssues key="issId" item="iss"}
 										<tr>
 											<td>{$iss.identification|escape}</td>
 											<td>
 												<input type="date" class="er-input er-issue-target-date-input"
 													data-issue-id="{$issId|escape}"
 													value="{$iss.targetDate|escape}" />
+											</td>
+											<td>
+												{if $iss.published}
+													<span class="er-role-pill">{translate key="editor.issues.backIssues"}</span>
+												{else}
+													<span class="er-role-pill er-role-pill--future">{translate key="editor.issues.futureIssues"}</span>
+												{/if}
 											</td>
 											<td>
 												<button type="button" class="er-btn er-btn--outline er-save-issue-date-btn" data-issue-id="{$issId|escape}">

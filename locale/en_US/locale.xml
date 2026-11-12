@@ -107,6 +107,10 @@
 	<message key="plugins.generic.editorialReminderDashboard.reviewerStatus.declined">Declined</message>
 	<message key="plugins.generic.editorialReminderDashboard.reviewerStatus.cancelled">Cancelled</message>
 	<message key="plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue">Select target issue</message>
+	<message key="plugins.generic.editorialReminderDashboard.copyediting.createFutureIssue">Create Future Issue</message>
+	<message key="plugins.generic.editorialReminderDashboard.copyediting.createFutureIssueHint">No unpublished future issues found in OJS. Click to create a future issue in OJS.</message>
+	<message key="plugins.generic.editorialReminderDashboard.copyediting.noUnpublishedIssuesHelp">No unpublished future issues exist in this journal yet.</message>
+	<message key="plugins.generic.editorialReminderDashboard.copyediting.openFutureIssues">Go to Future Issues</message>
 	<message key="plugins.generic.editorialReminderDashboard.copyediting.targetIssueHeading">Copyediting Target Issue</message>
 	<message key="plugins.generic.editorialReminderDashboard.copyediting.changeLogHeading">Target Issue Change History</message>
 	<message key="plugins.generic.editorialReminderDashboard.roundHistory.heading">Review Round History</message>

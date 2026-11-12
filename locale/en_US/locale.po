@@ -313,6 +313,18 @@ msgstr "Cancelled"
 msgid "plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"
 msgstr "Select target issue"
 
+msgid "plugins.generic.editorialReminderDashboard.copyediting.createFutureIssue"
+msgstr "Create Future Issue"
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.createFutureIssueHint"
+msgstr "No unpublished future issues found in OJS. Click to create a future issue in OJS."
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.noUnpublishedIssuesHelp"
+msgstr "No unpublished future issues exist in this journal yet."
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.openFutureIssues"
+msgstr "Go to Future Issues"
+
 msgid "plugins.generic.editorialReminderDashboard.copyediting.targetIssueHeading"
 msgstr "Copyediting Target Issue"
 

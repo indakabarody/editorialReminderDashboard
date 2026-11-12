@@ -17,84 +17,84 @@ require_once __DIR__ . '/EditorialReminderDAO.inc.php';
 
 class EditorialReminderService
 {
-	/** @var EditorialReminderDashboardPlugin */
-	protected $_plugin;
+    /** @var EditorialReminderDashboardPlugin */
+    protected $_plugin;
 
-	/** @var EditorialReminderDAO */
-	protected $_dao;
+    /** @var EditorialReminderDAO */
+    protected $_dao;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param EditorialReminderDashboardPlugin $plugin
-	 * @param EditorialReminderDAO|null $dao
-	 */
-	public function __construct($plugin, $dao = null)
-	{
-		$this->_plugin = $plugin;
-		$this->_dao = $dao ?: new EditorialReminderDAO();
-	}
+    /**
+     * Constructor.
+     *
+     * @param EditorialReminderDashboardPlugin $plugin
+     * @param EditorialReminderDAO|null $dao
+     */
+    public function __construct($plugin, $dao = null)
+    {
+        $this->_plugin = $plugin;
+        $this->_dao = $dao ?: new EditorialReminderDAO();
+    }
 
-	/**
-	 * Get the DAO instance.
-	 *
-	 * @return EditorialReminderDAO
-	 */
-	public function getDAO()
-	{
-		return $this->_dao;
-	}
+    /**
+     * Get the DAO instance.
+     *
+     * @return EditorialReminderDAO
+     */
+    public function getDAO()
+    {
+        return $this->_dao;
+    }
 
-	/**
-	 * Get effective settings for a journal (or global defaults when $contextId = 0).
-	 *
-	 * @param int $contextId Journal ID or 0 for site-level
-	 * @return array
-	 */
-	public function getContextSettings($contextId = 0)
-	{
-		$ctxId = (int) $contextId;
-		$defaultTz = Config::getVar('general', 'time_zone') ?: 'Asia/Jakarta';
-		if ($defaultTz === 'UTC' || empty($defaultTz)) {
-			$defaultTz = 'Asia/Jakarta';
-		}
+    /**
+     * Get effective settings for a journal (or global defaults when $contextId = 0).
+     *
+     * @param int $contextId Journal ID or 0 for site-level
+     * @return array
+     */
+    public function getContextSettings($contextId = 0)
+    {
+        $ctxId = (int) $contextId;
+        $defaultTz = Config::getVar('general', 'time_zone') ?: 'Asia/Jakarta';
+        if ($defaultTz === 'UTC' || empty($defaultTz)) {
+            $defaultTz = 'Asia/Jakarta';
+        }
 
-		// Site-level defaults
-		$globalRound1Limit = (int) $this->_plugin->getSetting(0, 'round1Limit') ?: 21;
-		$globalRound2Limit = (int) $this->_plugin->getSetting(0, 'round2Limit') ?: 7;
-		$globalRound1Warning = (int) $this->_plugin->getSetting(0, 'round1Warning') ?: 3;
-		$globalRound2Warning = (int) $this->_plugin->getSetting(0, 'round2Warning') ?: 2;
-		$globalCopyeditingWarning = (int) $this->_plugin->getSetting(0, 'copyeditingWarning') ?: 10;
-		$globalTimezone = (string) $this->_plugin->getSetting(0, 'timezone') ?: $defaultTz;
-		$directorUsernames = (string) $this->_plugin->getSetting(0, 'directorUsernames');
-		$enableDailyDigest = (bool) $this->_plugin->getSetting(0, 'enableDailyDigest');
-		$enableWeeklyDigest = (bool) $this->_plugin->getSetting(0, 'enableWeeklyDigest');
+        // Site-level defaults
+        $globalRound1Limit = (int) $this->_plugin->getSetting(0, 'round1Limit') ?: 21;
+        $globalRound2Limit = (int) $this->_plugin->getSetting(0, 'round2Limit') ?: 7;
+        $globalRound1Warning = (int) $this->_plugin->getSetting(0, 'round1Warning') ?: 3;
+        $globalRound2Warning = (int) $this->_plugin->getSetting(0, 'round2Warning') ?: 2;
+        $globalCopyeditingWarning = (int) $this->_plugin->getSetting(0, 'copyeditingWarning') ?: 10;
+        $globalTimezone = (string) $this->_plugin->getSetting(0, 'timezone') ?: $defaultTz;
+        $directorUsernames = (string) $this->_plugin->getSetting(0, 'directorUsernames');
+        $enableDailyDigest = (bool) $this->_plugin->getSetting(0, 'enableDailyDigest');
+        $enableWeeklyDigest = (bool) $this->_plugin->getSetting(0, 'enableWeeklyDigest');
 
-		if ($ctxId === 0) {
-			return [
-				'round1Limit' => max(14, min(21, $globalRound1Limit)),
-				'round2Limit' => max(1, $globalRound2Limit),
-				'round1Warning' => max(1, $globalRound1Warning),
-				'round2Warning' => max(1, $globalRound2Warning),
-				'copyeditingWarning' => max(1, $globalCopyeditingWarning),
-				'timezone' => $globalTimezone,
-				'directorUsernames' => $directorUsernames,
-				'enableDailyDigest' => $enableDailyDigest,
-				'enableWeeklyDigest' => $enableWeeklyDigest,
-			];
-		}
+        if ($ctxId === 0) {
+            return [
+                'round1Limit' => max(14, min(21, $globalRound1Limit)),
+                'round2Limit' => max(1, $globalRound2Limit),
+                'round1Warning' => max(1, $globalRound1Warning),
+                'round2Warning' => max(1, $globalRound2Warning),
+                'copyeditingWarning' => max(1, $globalCopyeditingWarning),
+                'timezone' => $globalTimezone,
+                'directorUsernames' => $directorUsernames,
+                'enableDailyDigest' => $enableDailyDigest,
+                'enableWeeklyDigest' => $enableWeeklyDigest,
+            ];
+        }
 
-		$r1Limit = $this->_plugin->getSetting($ctxId, 'round1Limit');
-		$r2Limit = $this->_plugin->getSetting($ctxId, 'round2Limit');
-		$r1Warn = $this->_plugin->getSetting($ctxId, 'round1Warning');
-		$r2Warn = $this->_plugin->getSetting($ctxId, 'round2Warning');
-		$ceWarn = $this->_plugin->getSetting($ctxId, 'copyeditingWarning');
-		$tz = $this->_plugin->getSetting($ctxId, 'timezone');
-		$jDaily = $this->_plugin->getSetting($ctxId, 'enableDailyDigest');
-		$jWeekly = $this->_plugin->getSetting($ctxId, 'enableWeeklyDigest');
+        $r1Limit = $this->_plugin->getSetting($ctxId, 'round1Limit');
+        $r2Limit = $this->_plugin->getSetting($ctxId, 'round2Limit');
+        $r1Warn = $this->_plugin->getSetting($ctxId, 'round1Warning');
+        $r2Warn = $this->_plugin->getSetting($ctxId, 'round2Warning');
+        $ceWarn = $this->_plugin->getSetting($ctxId, 'copyeditingWarning');
+        $tz = $this->_plugin->getSetting($ctxId, 'timezone');
+        $jDaily = $this->_plugin->getSetting($ctxId, 'enableDailyDigest');
+        $jWeekly = $this->_plugin->getSetting($ctxId, 'enableWeeklyDigest');
 
-		$round1Limit = $r1Limit !== null && $r1Limit !== '' ? (int) $r1Limit : $globalRound1Limit;
-		$round1Limit = max(14, min(21, $round1Limit)); // Allowed range: 14-21 working days
+        $round1Limit = $r1Limit !== null && $r1Limit !== '' ? (int) $r1Limit : $globalRound1Limit;
+        $round1Limit = max(14, min(21, $round1Limit)); // Allowed range: 14-21 working days
 
         return [
             'round1Limit' => $round1Limit,
@@ -109,120 +109,126 @@ class EditorialReminderService
         ];
     }
 
-	/**
-	 * Determine whether a user has Director / Site-level Executive access.
-	 *
-	 * @param User|null $user
-	 * @return bool
-	 */
-	public function isUserDirectorOrSiteAdmin($user)
-	{
-		if (!$user) {
-			return false;
-		}
-		if (Validation::isSiteAdmin()) {
-			return true;
-		}
+    /**
+     * Determine whether a user has Director / Site-level Executive access.
+     *
+     * @param User|null $user
+     * @return bool
+     */
+    public function isUserDirectorOrSiteAdmin($user)
+    {
+        if (!$user) {
+            return false;
+        }
+        if (Validation::isSiteAdmin()) {
+            return true;
+        }
 
-		$directorListRaw = (string) $this->_plugin->getSetting(0, 'directorUsernames');
-		if (trim($directorListRaw) === '') {
-			return false;
-		}
+        $directorListRaw = (string) $this->_plugin->getSetting(0, 'directorUsernames');
+        if (trim($directorListRaw) === '') {
+            return false;
+        }
 
-		$tokens = preg_split('/[\s,;]+/', strtolower(trim($directorListRaw)), -1, PREG_SPLIT_NO_EMPTY);
-		$username = strtolower((string) $user->getUsername());
-		$userIdStr = (string) $user->getId();
+        $tokens = preg_split('/[\s,;]+/', strtolower(trim($directorListRaw)), -1, PREG_SPLIT_NO_EMPTY);
+        $username = strtolower((string) $user->getUsername());
+        $userIdStr = (string) $user->getId();
 
-		return in_array($username, $tokens, true) || in_array($userIdStr, $tokens, true);
-	}
+        return in_array($username, $tokens, true) || in_array($userIdStr, $tokens, true);
+    }
 
-	/**
-	 * Build complete dashboard data for a single journal.
-	 *
-	 * @param int $contextId Journal ID
-	 * @param array $filters Active filter parameters (stage, status, editorId, issueId, search, sort)
-	 * @param int|null $restrictToEditorId User ID if user is a Section Editor
-	 * @param bool $canViewReviewerIdentity Whether current user can see reviewer names (Privacy)
-	 * @param string $locale Current locale
-	 * @return array
-	 */
-	public function getJournalDashboardData($contextId, $filters = [], $restrictToEditorId = null, $canViewReviewerIdentity = true, $locale = 'en_US')
-	{
-		$ctxId = (int) $contextId;
-		$settings = $this->getContextSettings($ctxId);
-		$holidays = $this->_dao->getHolidays($ctxId);
-		$holidayDates = array_column($holidays, 'date');
-		$calculator = new WorkingDayCalculator($holidayDates, $settings['timezone']);
+    /**
+     * Build complete dashboard data for a single journal.
+     *
+     * @param int $contextId Journal ID
+     * @param array $filters Active filter parameters (stage, status, editorId, issueId, search, sort)
+     * @param int|null $restrictToEditorId User ID if user is a Section Editor
+     * @param bool $canViewReviewerIdentity Whether current user can see reviewer names (Privacy)
+     * @param string $locale Current locale
+     * @return array
+     */
+    public function getJournalDashboardData($contextId, $filters = [], $restrictToEditorId = null, $canViewReviewerIdentity = true, $locale = 'en_US')
+    {
+        $ctxId = (int) $contextId;
+        $settings = $this->getContextSettings($ctxId);
+        $holidays = $this->_dao->getHolidays($ctxId);
+        $holidayDates = array_column($holidays, 'date');
+        $calculator = new WorkingDayCalculator($holidayDates, $settings['timezone']);
 
-		$issuesMap = $this->_dao->getIssuesWithTargetDates($ctxId, $locale);
-		$unpublishedIssues = [];
-		foreach ($issuesMap as $issId => $iss) {
-			if ((int) $iss['published'] === 0) {
-				$unpublishedIssues[$issId] = $iss;
-			}
-		}
+        $issuesMap = $this->_dao->getIssuesWithTargetDates($ctxId, $locale);
+        $futureIssues = [];
+        $backIssues = [];
+        foreach ($issuesMap as $issId => $iss) {
+            if ((int) $iss['published'] === 0) {
+                $futureIssues[$issId] = $iss;
+            } else {
+                $backIssues[$issId] = $iss;
+            }
+        }
 
-		$batch = $this->_dao->getMonitoredSubmissionsBatch($ctxId, $restrictToEditorId, $locale);
-		$allItems = $this->_processSubmissionsBatch($batch, [$ctxId => $settings], [$ctxId => $calculator], $issuesMap, $canViewReviewerIdentity, $locale);
+        $batch = $this->_dao->getMonitoredSubmissionsBatch($ctxId, $restrictToEditorId, $locale);
+        $allItems = $this->_processSubmissionsBatch($batch, [$ctxId => $settings], [$ctxId => $calculator], $issuesMap, $canViewReviewerIdentity, $locale);
 
-		// Compute overall summary cards before filter
-		$summary = [
-			'total' => count($allItems),
-			'reviewCount' => 0,
-			'copyeditingCount' => 0,
-			'normal' => 0,
-			'almostDue' => 0,
-			'overdue' => 0,
-			'noTarget' => 0,
-		];
+        // Compute overall summary cards before filter
+        $summary = [
+            'total' => count($allItems),
+            'reviewCount' => 0,
+            'copyeditingCount' => 0,
+            'normal' => 0,
+            'almostDue' => 0,
+            'overdue' => 0,
+            'noTarget' => 0,
+        ];
 
-		$editorsFilterMap = [];
-		foreach ($allItems as $item) {
-			if ($item['stageKey'] === 'review') {
-				$summary['reviewCount']++;
-			} else {
-				$summary['copyeditingCount']++;
-			}
+        $editorsFilterMap = [];
+        foreach ($allItems as $item) {
+            if ($item['stageKey'] === 'review') {
+                $summary['reviewCount']++;
+            } else {
+                $summary['copyeditingCount']++;
+            }
 
-			if ($item['status'] === 'normal') {
-				$summary['normal']++;
-			} elseif ($item['status'] === 'almost_due') {
-				$summary['almostDue']++;
-			} elseif ($item['status'] === 'overdue') {
-				$summary['overdue']++;
-			} elseif ($item['status'] === 'no_target') {
-				$summary['noTarget']++;
-			}
+            if ($item['status'] === 'normal') {
+                $summary['normal']++;
+            } elseif ($item['status'] === 'almost_due') {
+                $summary['almostDue']++;
+            } elseif ($item['status'] === 'overdue') {
+                $summary['overdue']++;
+            } elseif ($item['status'] === 'no_target') {
+                $summary['noTarget']++;
+            }
 
-			foreach ($item['editors'] as $ed) {
-				$editorsFilterMap[$ed['userId']] = $ed['fullName'];
-			}
-		}
-		asort($editorsFilterMap);
+            foreach ($item['editors'] as $ed) {
+                $editorsFilterMap[$ed['userId']] = $ed['fullName'];
+            }
+        }
+        asort($editorsFilterMap);
 
-		// Apply active filters
-		$filteredItems = $this->filterAndSortItems($allItems, $filters);
+        // Apply active filters
+        $filteredItems = $this->filterAndSortItems($allItems, $filters);
 
-		return [
-			'contextId' => $ctxId,
-			'settings' => $settings,
-			'holidays' => $holidays,
-			'issues' => $issuesMap,
-			'unpublishedIssues' => $unpublishedIssues,
-			'editorsFilterMap' => $editorsFilterMap,
-			'summary' => $summary,
-			'items' => $filteredItems,
-			'allItemsCount' => count($allItems),
-		];
-	}
+        return [
+            'contextId' => $ctxId,
+            'settings' => $settings,
+            'holidays' => $holidays,
+            'issues' => $issuesMap,
+            'allIssues' => $issuesMap,
+            'futureIssues' => $futureIssues,
+            'backIssues' => $backIssues,
+            'unpublishedIssues' => $futureIssues,
+            'editorsFilterMap' => $editorsFilterMap,
+            'summary' => $summary,
+            'items' => $filteredItems,
+            'allItemsCount' => count($allItems),
+        ];
+    }
 
-	/**
-	 * Build complete aggregated data for the Site-level Publishing House Dashboard.
-	 *
-	 * @param array $filters Active site filters (stage, sort)
-	 * @param string $locale Current locale
-	 * @return array
-	 */
+    /**
+     * Build complete aggregated data for the Site-level Publishing House Dashboard.
+     *
+     * @param array $filters Active site filters (stage, sort)
+     * @param string $locale Current locale
+     * @return array
+     */
     public function getSiteDashboardData($filters = [], $locale = 'en_US')
     {
         $journals = $this->_dao->getEnabledJournals($locale);
@@ -331,202 +337,202 @@ class EditorialReminderService
         }
         unset($st);
 
-		// Sort journal rows
-		$sortBy = isset($filters['sort']) ? (string) $filters['sort'] : 'most_overdue';
-		$journalRows = array_values($journalStats);
-		usort($journalRows, function ($a, $b) use ($sortBy) {
-			if ($sortBy === 'most_almost_due') {
-				if ($b['almostDue'] !== $a['almostDue']) {
-					return $b['almostDue'] - $a['almostDue'];
-				}
-				return $b['overdue'] - $a['overdue'];
-			} elseif ($sortBy === 'most_articles') {
-				if ($b['total'] !== $a['total']) {
-					return $b['total'] - $a['total'];
-				}
-				return $b['overdue'] - $a['overdue'];
-			} elseif ($sortBy === 'name_asc') {
-				return strcasecmp($a['name'], $b['name']);
-			}
-			// Default: most_overdue
-			if ($b['overdue'] !== $a['overdue']) {
-				return $b['overdue'] - $a['overdue'];
-			}
-			if ($b['almostDue'] !== $a['almostDue']) {
-				return $b['almostDue'] - $a['almostDue'];
-			}
-			return $b['total'] - $a['total'];
-		});
+        // Sort journal rows
+        $sortBy = isset($filters['sort']) ? (string) $filters['sort'] : 'most_overdue';
+        $journalRows = array_values($journalStats);
+        usort($journalRows, function ($a, $b) use ($sortBy) {
+            if ($sortBy === 'most_almost_due') {
+                if ($b['almostDue'] !== $a['almostDue']) {
+                    return $b['almostDue'] - $a['almostDue'];
+                }
+                return $b['overdue'] - $a['overdue'];
+            } elseif ($sortBy === 'most_articles') {
+                if ($b['total'] !== $a['total']) {
+                    return $b['total'] - $a['total'];
+                }
+                return $b['overdue'] - $a['overdue'];
+            } elseif ($sortBy === 'name_asc') {
+                return strcasecmp($a['name'], $b['name']);
+            }
+            // Default: most_overdue
+            if ($b['overdue'] !== $a['overdue']) {
+                return $b['overdue'] - $a['overdue'];
+            }
+            if ($b['almostDue'] !== $a['almostDue']) {
+                return $b['almostDue'] - $a['almostDue'];
+            }
+            return $b['total'] - $a['total'];
+        });
 
-		// Most urgent articles across all journals
-		$urgentCandidates = array_filter($allItems, function ($item) {
-			return in_array($item['status'], ['overdue', 'almost_due'], true);
-		});
-		$urgentItems = $this->filterAndSortItems(array_values($urgentCandidates), ['sort' => 'urgency']);
-		$urgentTop = array_slice($urgentItems, 0, 25);
+        // Most urgent articles across all journals
+        $urgentCandidates = array_filter($allItems, function ($item) {
+            return in_array($item['status'], ['overdue', 'almost_due'], true);
+        });
+        $urgentItems = $this->filterAndSortItems(array_values($urgentCandidates), ['sort' => 'urgency']);
+        $urgentTop = array_slice($urgentItems, 0, 25);
 
-		// Sort allItems by urgency for CSV detail export
-		$sortedAllItems = $this->filterAndSortItems($allItems, ['sort' => 'urgency']);
+        // Sort allItems by urgency for CSV detail export
+        $sortedAllItems = $this->filterAndSortItems($allItems, ['sort' => 'urgency']);
 
-		return [
-			'summary' => $siteSummary,
-			'journalRows' => $journalRows,
-			'urgentItems' => $urgentTop,
-			'allItems' => $sortedAllItems,
-		];
-	}
+        return [
+            'summary' => $siteSummary,
+            'journalRows' => $journalRows,
+            'urgentItems' => $urgentTop,
+            'allItems' => $sortedAllItems,
+        ];
+    }
 
-	/**
-	 * Filter and sort processed dashboard items.
-	 *
-	 * @param array $items
-	 * @param array $filters
-	 * @return array
-	 */
-	public function filterAndSortItems($items, $filters = [])
-	{
-		$stage = isset($filters['stage']) ? trim((string) $filters['stage']) : 'all';
-		$status = isset($filters['status']) ? trim((string) $filters['status']) : 'all';
-		$editorId = isset($filters['editorId']) && $filters['editorId'] !== '' && $filters['editorId'] !== 'all' ? (int) $filters['editorId'] : null;
-		$issueId = isset($filters['issueId']) ? trim((string) $filters['issueId']) : 'all';
-		$search = isset($filters['search']) ? strtolower(trim((string) $filters['search'])) : '';
-		$sort = isset($filters['sort']) ? trim((string) $filters['sort']) : 'urgency';
+    /**
+     * Filter and sort processed dashboard items.
+     *
+     * @param array $items
+     * @param array $filters
+     * @return array
+     */
+    public function filterAndSortItems($items, $filters = [])
+    {
+        $stage = isset($filters['stage']) ? trim((string) $filters['stage']) : 'all';
+        $status = isset($filters['status']) ? trim((string) $filters['status']) : 'all';
+        $editorId = isset($filters['editorId']) && $filters['editorId'] !== '' && $filters['editorId'] !== 'all' ? (int) $filters['editorId'] : null;
+        $issueId = isset($filters['issueId']) ? trim((string) $filters['issueId']) : 'all';
+        $search = isset($filters['search']) ? strtolower(trim((string) $filters['search'])) : '';
+        $sort = isset($filters['sort']) ? trim((string) $filters['sort']) : 'urgency';
 
-		$filtered = array_filter($items, function ($item) use ($stage, $status, $editorId, $issueId, $search) {
-			if ($stage !== 'all' && $stage !== '' && $item['stageKey'] !== $stage) {
-				return false;
-			}
-			if ($status !== 'all' && $status !== '' && $item['status'] !== $status) {
-				return false;
-			}
-			if ($editorId !== null) {
-				if ($editorId === 0) {
-					if (!empty($item['editors'])) {
-						return false;
-					}
-				} else {
-					$matchedEditor = false;
-					foreach ($item['editors'] as $ed) {
-						if ((int) $ed['userId'] === $editorId) {
-							$matchedEditor = true;
-							break;
-						}
-					}
-					if (!$matchedEditor) {
-						return false;
-					}
-				}
-			}
-			if ($issueId !== 'all' && $issueId !== '') {
-				if ($issueId === 'none') {
-					if (!empty($item['targetIssueId'])) {
-						return false;
-					}
-				} elseif ((int) $item['targetIssueId'] !== (int) $issueId) {
-					return false;
-				}
-			}
-			if ($search !== '') {
-				$haystack = strtolower($item['id'] . ' ' . $item['title'] . ' ' . $item['editorNames']);
-				if (strpos($haystack, $search) === false) {
-					return false;
-				}
-			}
-			return true;
-		});
+        $filtered = array_filter($items, function ($item) use ($stage, $status, $editorId, $issueId, $search) {
+            if ($stage !== 'all' && $stage !== '' && $item['stageKey'] !== $stage) {
+                return false;
+            }
+            if ($status !== 'all' && $status !== '' && $item['status'] !== $status) {
+                return false;
+            }
+            if ($editorId !== null) {
+                if ($editorId === 0) {
+                    if (!empty($item['editors'])) {
+                        return false;
+                    }
+                } else {
+                    $matchedEditor = false;
+                    foreach ($item['editors'] as $ed) {
+                        if ((int) $ed['userId'] === $editorId) {
+                            $matchedEditor = true;
+                            break;
+                        }
+                    }
+                    if (!$matchedEditor) {
+                        return false;
+                    }
+                }
+            }
+            if ($issueId !== 'all' && $issueId !== '') {
+                if ($issueId === 'none') {
+                    if (!empty($item['targetIssueId'])) {
+                        return false;
+                    }
+                } elseif ((int) $item['targetIssueId'] !== (int) $issueId) {
+                    return false;
+                }
+            }
+            if ($search !== '') {
+                $haystack = strtolower($item['id'] . ' ' . $item['title'] . ' ' . $item['editorNames']);
+                if (strpos($haystack, $search) === false) {
+                    return false;
+                }
+            }
+            return true;
+        });
 
-		$result = array_values($filtered);
+        $result = array_values($filtered);
 
-		usort($result, function ($a, $b) use ($sort) {
-			if ($sort === 'id_asc') {
-				return $a['id'] - $b['id'];
-			} elseif ($sort === 'id_desc') {
-				return $b['id'] - $a['id'];
-			} elseif ($sort === 'due_asc') {
-				$da = $a['dueDate'] ?: '9999-12-31';
-				$db = $b['dueDate'] ?: '9999-12-31';
-				return strcmp($da, $db);
-			} elseif ($sort === 'start_asc') {
-				$sa = $a['startDate'] ?: '9999-12-31';
-				$sb = $b['startDate'] ?: '9999-12-31';
-				return strcmp($sa, $sb);
-			}
+        usort($result, function ($a, $b) use ($sort) {
+            if ($sort === 'id_asc') {
+                return $a['id'] - $b['id'];
+            } elseif ($sort === 'id_desc') {
+                return $b['id'] - $a['id'];
+            } elseif ($sort === 'due_asc') {
+                $da = $a['dueDate'] ?: '9999-12-31';
+                $db = $b['dueDate'] ?: '9999-12-31';
+                return strcmp($da, $db);
+            } elseif ($sort === 'start_asc') {
+                $sa = $a['startDate'] ?: '9999-12-31';
+                $sb = $b['startDate'] ?: '9999-12-31';
+                return strcmp($sa, $sb);
+            }
 
-			// Default: Most urgent first (overdue longest at top, then almost due, then no target, then normal)
-			if ($b['urgencyScore'] !== $a['urgencyScore']) {
-				return $b['urgencyScore'] - $a['urgencyScore'];
-			}
-			return $a['id'] - $b['id'];
-		});
+            // Default: Most urgent first (overdue longest at top, then almost due, then no target, then normal)
+            if ($b['urgencyScore'] !== $a['urgencyScore']) {
+                return $b['urgencyScore'] - $a['urgencyScore'];
+            }
+            return $a['id'] - $b['id'];
+        });
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Process raw database batch into enriched submission items.
-	 *
-	 * @param array $batch
-	 * @param array<int, array> $settingsByJournal
-	 * @param array<int, WorkingDayCalculator> $calculatorsByJournal
-	 * @param array<int, array> $issuesMap
-	 * @param bool $canViewReviewerIdentity
-	 * @param string $locale
-	 * @param array $journalsMap
-	 * @return array
-	 */
-	protected function _processSubmissionsBatch($batch, $settingsByJournal, $calculatorsByJournal, $issuesMap, $canViewReviewerIdentity = true, $locale = 'en_US', $journalsMap = [])
-	{
-		if (empty($batch['submissions'])) {
-			return [];
-		}
+    /**
+     * Process raw database batch into enriched submission items.
+     *
+     * @param array $batch
+     * @param array<int, array> $settingsByJournal
+     * @param array<int, WorkingDayCalculator> $calculatorsByJournal
+     * @param array<int, array> $issuesMap
+     * @param bool $canViewReviewerIdentity
+     * @param string $locale
+     * @param array $journalsMap
+     * @return array
+     */
+    protected function _processSubmissionsBatch($batch, $settingsByJournal, $calculatorsByJournal, $issuesMap, $canViewReviewerIdentity = true, $locale = 'en_US', $journalsMap = [])
+    {
+        if (empty($batch['submissions'])) {
+            return [];
+        }
 
-		$items = [];
-		$userNames = isset($batch['userNames']) ? $batch['userNames'] : [];
+        $items = [];
+        $userNames = isset($batch['userNames']) ? $batch['userNames'] : [];
 
-		foreach ($batch['submissions'] as $subRow) {
-			$subId = (int) $subRow->submission_id;
-			$ctxId = (int) $subRow->context_id;
-			$stageId = (int) $subRow->stage_id;
+        foreach ($batch['submissions'] as $subRow) {
+            $subId = (int) $subRow->submission_id;
+            $ctxId = (int) $subRow->context_id;
+            $stageId = (int) $subRow->stage_id;
 
-			$settings = isset($settingsByJournal[$ctxId]) ? $settingsByJournal[$ctxId] : $this->getContextSettings($ctxId);
-			$calculator = isset($calculatorsByJournal[$ctxId]) ? $calculatorsByJournal[$ctxId] : new WorkingDayCalculator([], $settings['timezone']);
+            $settings = isset($settingsByJournal[$ctxId]) ? $settingsByJournal[$ctxId] : $this->getContextSettings($ctxId);
+            $calculator = isset($calculatorsByJournal[$ctxId]) ? $calculatorsByJournal[$ctxId] : new WorkingDayCalculator([], $settings['timezone']);
 
-			$title = isset($batch['titles'][$subId]) && $batch['titles'][$subId] !== '' ? $batch['titles'][$subId] : __('common.untitled');
+            $title = isset($batch['titles'][$subId]) && $batch['titles'][$subId] !== '' ? $batch['titles'][$subId] : __('common.untitled');
 
-			$editors = isset($batch['editors'][$subId]) ? array_values($batch['editors'][$subId]) : [];
-			$editorNameList = array_column($editors, 'fullName');
-			$editorNames = !empty($editorNameList) ? implode(', ', $editorNameList) : __('plugins.generic.editorialReminderDashboard.unassignedEditor');
+            $editors = isset($batch['editors'][$subId]) ? array_values($batch['editors'][$subId]) : [];
+            $editorNameList = array_column($editors, 'fullName');
+            $editorNames = !empty($editorNameList) ? implode(', ', $editorNameList) : __('plugins.generic.editorialReminderDashboard.unassignedEditor');
 
-			$decisions = isset($batch['editDecisions'][$subId]) ? $batch['editDecisions'][$subId] : [];
-			$rounds = isset($batch['reviewRounds'][$subId]) ? $batch['reviewRounds'][$subId] : [];
-			$assignments = isset($batch['reviewAssignments'][$subId]) ? $batch['reviewAssignments'][$subId] : [];
+            $decisions = isset($batch['editDecisions'][$subId]) ? $batch['editDecisions'][$subId] : [];
+            $rounds = isset($batch['reviewRounds'][$subId]) ? $batch['reviewRounds'][$subId] : [];
+            $assignments = isset($batch['reviewAssignments'][$subId]) ? $batch['reviewAssignments'][$subId] : [];
 
-			// Build Review Round History across all review rounds
-			$roundHistoryData = $this->_computeRoundHistory($subRow, $rounds, $assignments, $decisions, $calculator, $settings);
+            // Build Review Round History across all review rounds
+            $roundHistoryData = $this->_computeRoundHistory($subRow, $rounds, $assignments, $decisions, $calculator, $settings);
 
-			$journalName = isset($journalsMap[$ctxId]['name']) ? $journalsMap[$ctxId]['name'] : '';
-			$journalPath = isset($journalsMap[$ctxId]['path']) ? $journalsMap[$ctxId]['path'] : '';
+            $journalName = isset($journalsMap[$ctxId]['name']) ? $journalsMap[$ctxId]['name'] : '';
+            $journalPath = isset($journalsMap[$ctxId]['path']) ? $journalsMap[$ctxId]['path'] : '';
 
-			if ($stageId === 2 || $stageId === 3) {
-				// Exclude if final decision (Accept=1, Decline=4, Initial Decline=9, Send to Production=7) has been taken on current stage
-				if ($this->_hasFinalReviewDecision($decisions, $stageId, $roundHistoryData['currentRoundNumber'])) {
-					continue;
-				}
+            if ($stageId === 2 || $stageId === 3) {
+                // Exclude if final decision (Accept=1, Decline=4, Initial Decline=9, Send to Production=7) has been taken on current stage
+                if ($this->_hasFinalReviewDecision($decisions, $stageId, $roundHistoryData['currentRoundNumber'])) {
+                    continue;
+                }
 
-				$currentRoundNum = $roundHistoryData['currentRoundNumber'];
-				$startDate = $roundHistoryData['currentRoundStartDate'];
-				$pauseEndDate = $roundHistoryData['currentRoundPauseDate']; // Pause if waiting for author revisions
+                $currentRoundNum = $roundHistoryData['currentRoundNumber'];
+                $startDate = $roundHistoryData['currentRoundStartDate'];
+                $pauseEndDate = $roundHistoryData['currentRoundPauseDate']; // Pause if waiting for author revisions
 
-				$limitDays = $currentRoundNum <= 1 ? $settings['round1Limit'] : $settings['round2Limit'];
-				$warnDays = $currentRoundNum <= 1 ? $settings['round1Warning'] : $settings['round2Warning'];
+                $limitDays = $currentRoundNum <= 1 ? $settings['round1Limit'] : $settings['round2Limit'];
+                $warnDays = $currentRoundNum <= 1 ? $settings['round1Warning'] : $settings['round2Warning'];
 
-				$eval = $calculator->evaluateReviewRound($startDate, $limitDays, $warnDays, $pauseEndDate);
+                $eval = $calculator->evaluateReviewRound($startDate, $limitDays, $warnDays, $pauseEndDate);
 
-				// Reviewer breakdown for active round
-				$activeRoundReviewers = $this->_buildRoundReviewers($assignments, $currentRoundNum, $stageId, $userNames, $canViewReviewerIdentity);
+                // Reviewer breakdown for active round
+                $activeRoundReviewers = $this->_buildRoundReviewers($assignments, $currentRoundNum, $stageId, $userNames, $canViewReviewerIdentity);
 
-				// Delay cause
-				$delayCauseInfo = $this->_determineReviewDelayCause($activeRoundReviewers, $decisions, $currentRoundNum, $stageId, $pauseEndDate !== null);
+                // Delay cause
+                $delayCauseInfo = $this->_determineReviewDelayCause($activeRoundReviewers, $decisions, $currentRoundNum, $stageId, $pauseEndDate !== null);
 
                 $timeRemainingText = $this->_formatReviewTimeRemaining($eval, $pauseEndDate !== null);
 
@@ -565,186 +571,186 @@ class EditorialReminderService
                     'targetIssueLabel' => null,
                     'targetIssueLogs' => [],
                 ];
-			} elseif ($stageId === 4) {
-				// Copyediting stage
-				$targetIssueObj = isset($batch['targetIssues'][$subId]) ? $batch['targetIssues'][$subId] : null;
-				$targetIssueId = $targetIssueObj && !empty($targetIssueObj->issue_id) ? (int) $targetIssueObj->issue_id : (isset($batch['publicationIssues'][$subId]) ? (int) $batch['publicationIssues'][$subId] : null);
+            } elseif ($stageId === 4) {
+                // Copyediting stage
+                $targetIssueObj = isset($batch['targetIssues'][$subId]) ? $batch['targetIssues'][$subId] : null;
+                $targetIssueId = $targetIssueObj && !empty($targetIssueObj->issue_id) ? (int) $targetIssueObj->issue_id : (isset($batch['publicationIssues'][$subId]) ? (int) $batch['publicationIssues'][$subId] : null);
 
-				$targetDate = null;
-				$targetIssueShort = null;
-				$targetIssueFull = null;
+                $targetDate = null;
+                $targetIssueShort = null;
+                $targetIssueFull = null;
 
-				if ($targetIssueId && isset($issuesMap[$targetIssueId])) {
-					$issueMeta = $issuesMap[$targetIssueId];
-					$targetDate = $issueMeta['targetDate'];
-					$targetIssueShort = $issueMeta['shortLabel'];
-					$targetIssueFull = $issueMeta['identification'];
-				} elseif ($targetIssueObj && !empty($targetIssueObj->target_date)) {
-					$targetDate = substr((string) $targetIssueObj->target_date, 0, 10);
-				}
+                if ($targetIssueId && isset($issuesMap[$targetIssueId])) {
+                    $issueMeta = $issuesMap[$targetIssueId];
+                    $targetDate = $issueMeta['targetDate'];
+                    $targetIssueShort = $issueMeta['shortLabel'];
+                    $targetIssueFull = $issueMeta['identification'];
+                } elseif ($targetIssueObj && !empty($targetIssueObj->target_date)) {
+                    $targetDate = substr((string) $targetIssueObj->target_date, 0, 10);
+                }
 
-				$copyEval = $calculator->evaluateCopyediting($targetDate, $settings['copyeditingWarning']);
-				$stageLabel = $targetIssueShort ? __('plugins.generic.editorialReminderDashboard.stage.copyeditingWithIssue', ['issue' => $targetIssueShort]) : __('plugins.generic.editorialReminderDashboard.stage.copyediting');
+                $copyEval = $calculator->evaluateCopyediting($targetDate, $settings['copyeditingWarning']);
+                $stageLabel = $targetIssueShort ? __('plugins.generic.editorialReminderDashboard.stage.copyeditingWithIssue', ['issue' => $targetIssueShort]) : __('plugins.generic.editorialReminderDashboard.stage.copyediting');
 
-				$timeRemainingText = $this->_formatCopyeditingTimeRemaining($copyEval);
+                $timeRemainingText = $this->_formatCopyeditingTimeRemaining($copyEval);
 
-				// Format target issue logs
-				$rawLogs = isset($batch['targetIssueLogs'][$subId]) ? $batch['targetIssueLogs'][$subId] : [];
-				$formattedLogs = [];
-				foreach ($rawLogs as $lg) {
-					$oldId = !empty($lg->old_issue_id) ? (int) $lg->old_issue_id : null;
-					$newId = !empty($lg->new_issue_id) ? (int) $lg->new_issue_id : null;
-					$changerId = (int) $lg->changed_by;
-					$formattedLogs[] = [
-						'dateChanged' => (string) $lg->date_changed,
-						'changedByName' => isset($userNames[$changerId]) ? $userNames[$changerId] : 'User #' . $changerId,
-						'oldIssueLabel' => $oldId && isset($issuesMap[$oldId]) ? $issuesMap[$oldId]['identification'] : __('common.none'),
-						'newIssueLabel' => $newId && isset($issuesMap[$newId]) ? $issuesMap[$newId]['identification'] : __('common.none'),
-					];
-				}
+                // Format target issue logs
+                $rawLogs = isset($batch['targetIssueLogs'][$subId]) ? $batch['targetIssueLogs'][$subId] : [];
+                $formattedLogs = [];
+                foreach ($rawLogs as $lg) {
+                    $oldId = !empty($lg->old_issue_id) ? (int) $lg->old_issue_id : null;
+                    $newId = !empty($lg->new_issue_id) ? (int) $lg->new_issue_id : null;
+                    $changerId = (int) $lg->changed_by;
+                    $formattedLogs[] = [
+                        'dateChanged' => (string) $lg->date_changed,
+                        'changedByName' => isset($userNames[$changerId]) ? $userNames[$changerId] : 'User #' . $changerId,
+                        'oldIssueLabel' => $oldId && isset($issuesMap[$oldId]) ? $issuesMap[$oldId]['identification'] : __('common.none'),
+                        'newIssueLabel' => $newId && isset($issuesMap[$newId]) ? $issuesMap[$newId]['identification'] : __('common.none'),
+                    ];
+                }
 
-				$delayCauseLabel = '';
-				if ($copyEval['status'] === 'no_target') {
-					$delayCauseLabel = __('plugins.generic.editorialReminderDashboard.delayCause.noTargetIssue');
-				} elseif ($copyEval['status'] === 'overdue' || $copyEval['status'] === 'almost_due') {
-					$delayCauseLabel = __('plugins.generic.editorialReminderDashboard.delayCause.copyeditingTarget');
-				}
+                $delayCauseLabel = '';
+                if ($copyEval['status'] === 'no_target') {
+                    $delayCauseLabel = __('plugins.generic.editorialReminderDashboard.delayCause.noTargetIssue');
+                } elseif ($copyEval['status'] === 'overdue' || $copyEval['status'] === 'almost_due') {
+                    $delayCauseLabel = __('plugins.generic.editorialReminderDashboard.delayCause.copyeditingTarget');
+                }
 
-				$items[] = [
-					'id' => $subId,
-					'contextId' => $ctxId,
-					'journalName' => $journalName,
-					'journalPath' => $journalPath,
-					'title' => $title,
-					'stageId' => $stageId,
-					'stageKey' => 'copyediting',
-					'stageLabel' => $stageLabel,
-					'round' => null,
-					'editors' => $editors,
-					'editorNames' => $editorNames,
-					'startDate' => null,
-					'startDateFormatted' => '—',
-					'dueDate' => $copyEval['targetDate'],
-					'dueDateFormatted' => $copyEval['targetDate'] ? $this->formatShortDate($copyEval['targetDate'], $locale) : '—',
-					'elapsedWorkingDays' => null,
-					'remainingWorkingDays' => $copyEval['remainingCalendarDays'],
-					'overdueWorkingDays' => $copyEval['overdueCalendarDays'],
-					'limitWorkingDays' => null,
-					'timeRemainingText' => $timeRemainingText,
-					'status' => $copyEval['status'],
-					'statusLabel' => $this->getStatusLabel($copyEval['status']),
-					'statusSymbol' => $this->getStatusSymbol($copyEval['status']),
-					'delayCauseKey' => $copyEval['status'] === 'no_target' ? 'no_target_issue' : 'copyediting_schedule',
-					'delayCauseLabel' => $delayCauseLabel,
-					'isPausedForAuthorRevision' => false,
-					'urgencyScore' => $copyEval['urgencyScore'],
-					'reviewers' => [],
-					'roundHistory' => $roundHistoryData['historyList'],
-					'cumulativeWorkingDays' => $roundHistoryData['cumulativeWorkingDays'],
-					'targetIssueId' => $targetIssueId,
-					'targetIssueLabel' => $targetIssueFull,
-					'targetIssueShortLabel' => $targetIssueShort,
-					'targetIssueLogs' => $formattedLogs,
-				];
-			}
-		}
+                $items[] = [
+                    'id' => $subId,
+                    'contextId' => $ctxId,
+                    'journalName' => $journalName,
+                    'journalPath' => $journalPath,
+                    'title' => $title,
+                    'stageId' => $stageId,
+                    'stageKey' => 'copyediting',
+                    'stageLabel' => $stageLabel,
+                    'round' => null,
+                    'editors' => $editors,
+                    'editorNames' => $editorNames,
+                    'startDate' => null,
+                    'startDateFormatted' => '—',
+                    'dueDate' => $copyEval['targetDate'],
+                    'dueDateFormatted' => $copyEval['targetDate'] ? $this->formatShortDate($copyEval['targetDate'], $locale) : '—',
+                    'elapsedWorkingDays' => null,
+                    'remainingWorkingDays' => $copyEval['remainingCalendarDays'],
+                    'overdueWorkingDays' => $copyEval['overdueCalendarDays'],
+                    'limitWorkingDays' => null,
+                    'timeRemainingText' => $timeRemainingText,
+                    'status' => $copyEval['status'],
+                    'statusLabel' => $this->getStatusLabel($copyEval['status']),
+                    'statusSymbol' => $this->getStatusSymbol($copyEval['status']),
+                    'delayCauseKey' => $copyEval['status'] === 'no_target' ? 'no_target_issue' : 'copyediting_schedule',
+                    'delayCauseLabel' => $delayCauseLabel,
+                    'isPausedForAuthorRevision' => false,
+                    'urgencyScore' => $copyEval['urgencyScore'],
+                    'reviewers' => [],
+                    'roundHistory' => $roundHistoryData['historyList'],
+                    'cumulativeWorkingDays' => $roundHistoryData['cumulativeWorkingDays'],
+                    'targetIssueId' => $targetIssueId,
+                    'targetIssueLabel' => $targetIssueFull,
+                    'targetIssueShortLabel' => $targetIssueShort,
+                    'targetIssueLogs' => $formattedLogs,
+                ];
+            }
+        }
 
-		return $items;
-	}
+        return $items;
+    }
 
-	/**
-	 * Compute start date, end date, and duration for each review round of a submission.
-	 *
-	 * @param object $subRow
-	 * @param array $rounds
-	 * @param array $assignments
-	 * @param array $decisions
-	 * @param WorkingDayCalculator $calculator
-	 * @param array $settings
-	 * @return array
-	 */
-	protected function _computeRoundHistory($subRow, $rounds, $assignments, $decisions, $calculator, $settings)
-	{
-		$subId = (int) $subRow->submission_id;
-		$ctxId = (int) $subRow->context_id;
+    /**
+     * Compute start date, end date, and duration for each review round of a submission.
+     *
+     * @param object $subRow
+     * @param array $rounds
+     * @param array $assignments
+     * @param array $decisions
+     * @param WorkingDayCalculator $calculator
+     * @param array $settings
+     * @return array
+     */
+    protected function _computeRoundHistory($subRow, $rounds, $assignments, $decisions, $calculator, $settings)
+    {
+        $subId = (int) $subRow->submission_id;
+        $ctxId = (int) $subRow->context_id;
 
-		if (empty($rounds)) {
-			// Fallback if submission is in Review stage but review_rounds row hasn't been created yet
-			$fallbackStart = $this->_findRoundStartDate($subRow, 1, 3, $decisions, $assignments);
-			return [
-				'currentRoundNumber' => 1,
-				'currentRoundStartDate' => $fallbackStart,
-				'currentRoundPauseDate' => null,
-				'historyList' => [],
-				'cumulativeWorkingDays' => 0,
-			];
-		}
+        if (empty($rounds)) {
+            // Fallback if submission is in Review stage but review_rounds row hasn't been created yet
+            $fallbackStart = $this->_findRoundStartDate($subRow, 1, 3, $decisions, $assignments);
+            return [
+                'currentRoundNumber' => 1,
+                'currentRoundStartDate' => $fallbackStart,
+                'currentRoundPauseDate' => null,
+                'historyList' => [],
+                'cumulativeWorkingDays' => 0,
+            ];
+        }
 
-		$totalRounds = count($rounds);
-		$historyList = [];
-		$cumulativeWorkingDays = 0;
-		$currentRoundNumber = 1;
-		$currentRoundStartDate = substr((string) ($subRow->date_submitted ?: date('Y-m-d')), 0, 10);
-		$currentRoundPauseDate = null;
+        $totalRounds = count($rounds);
+        $historyList = [];
+        $cumulativeWorkingDays = 0;
+        $currentRoundNumber = 1;
+        $currentRoundStartDate = substr((string) ($subRow->date_submitted ?: date('Y-m-d')), 0, 10);
+        $currentRoundPauseDate = null;
 
-		foreach ($rounds as $idx => $roundObj) {
-			$roundNum = (int) $roundObj->round;
-			$rStageId = (int) ($roundObj->stage_id ?: 3);
-			$startDate = $this->_findRoundStartDate($subRow, $roundNum, $rStageId, $decisions, $assignments);
+        foreach ($rounds as $idx => $roundObj) {
+            $roundNum = (int) $roundObj->round;
+            $rStageId = (int) ($roundObj->stage_id ?: 3);
+            $startDate = $this->_findRoundStartDate($subRow, $roundNum, $rStageId, $decisions, $assignments);
 
-			$isLastRound = $idx === $totalRounds - 1 && ((int) $subRow->stage_id === 2 || (int) $subRow->stage_id === 3);
+            $isLastRound = $idx === $totalRounds - 1 && ((int) $subRow->stage_id === 2 || (int) $subRow->stage_id === 3);
 
-			if (!$isLastRound) {
-				// Completed round: find when the next round started or when the round decision was taken
-				$nextRoundObj = isset($rounds[$idx + 1]) ? $rounds[$idx + 1] : null;
-				$endDate = null;
-				if ($nextRoundObj) {
-					$endDate = $this->_findRoundStartDate($subRow, (int) $nextRoundObj->round, (int) ($nextRoundObj->stage_id ?: 3), $decisions, $assignments);
-				}
-				// Also check if there was a Request Revisions / Accept / Decline decision on this round before next round
-				$roundDecisionDate = $this->_findRoundEndDecisionDate($roundNum, $rStageId, $decisions);
-				if ($roundDecisionDate && (!$endDate || $roundDecisionDate < $endDate)) {
-					$endDate = $roundDecisionDate;
-				}
-				if (!$endDate) {
-					$endDate = substr((string) ($subRow->date_last_activity ?: date('Y-m-d')), 0, 10);
-				}
+            if (!$isLastRound) {
+                // Completed round: find when the next round started or when the round decision was taken
+                $nextRoundObj = isset($rounds[$idx + 1]) ? $rounds[$idx + 1] : null;
+                $endDate = null;
+                if ($nextRoundObj) {
+                    $endDate = $this->_findRoundStartDate($subRow, (int) $nextRoundObj->round, (int) ($nextRoundObj->stage_id ?: 3), $decisions, $assignments);
+                }
+                // Also check if there was a Request Revisions / Accept / Decline decision on this round before next round
+                $roundDecisionDate = $this->_findRoundEndDecisionDate($roundNum, $rStageId, $decisions);
+                if ($roundDecisionDate && (!$endDate || $roundDecisionDate < $endDate)) {
+                    $endDate = $roundDecisionDate;
+                }
+                if (!$endDate) {
+                    $endDate = substr((string) ($subRow->date_last_activity ?: date('Y-m-d')), 0, 10);
+                }
 
-				$limit = $roundNum <= 1 ? $settings['round1Limit'] : $settings['round2Limit'];
-				$durationWorkingDays = $calculator->countWorkingDaysBetween($startDate, $endDate);
-				$finalStatus = $durationWorkingDays > $limit ? 'overdue' : 'completed';
+                $limit = $roundNum <= 1 ? $settings['round1Limit'] : $settings['round2Limit'];
+                $durationWorkingDays = $calculator->countWorkingDaysBetween($startDate, $endDate);
+                $finalStatus = $durationWorkingDays > $limit ? 'overdue' : 'completed';
 
-				$this->_dao->upsertRoundHistory($subId, $ctxId, (int) $roundObj->review_round_id, $rStageId, $roundNum, $startDate, $endDate, $durationWorkingDays, $finalStatus);
+                $this->_dao->upsertRoundHistory($subId, $ctxId, (int) $roundObj->review_round_id, $rStageId, $roundNum, $startDate, $endDate, $durationWorkingDays, $finalStatus);
 
-				$cumulativeWorkingDays += $durationWorkingDays;
-				$historyList[] = [
-					'round' => $roundNum,
-					'dateStart' => $startDate,
-					'dateEnd' => $endDate,
-					'workingDays' => $durationWorkingDays,
-					'limitWorkingDays' => $limit,
-					'finalStatus' => $finalStatus,
-					'finalStatusLabel' => $finalStatus === 'overdue' ? __('plugins.generic.editorialReminderDashboard.roundHistory.completedOverdue', ['days' => $durationWorkingDays]) : __('plugins.generic.editorialReminderDashboard.roundHistory.completedOnTime', ['days' => $durationWorkingDays]),
-				];
-			} else {
-				$currentRoundNumber = $roundNum;
-				$currentRoundStartDate = $startDate;
-				// Check if active round is currently waiting for author revisions
-				$currentRoundPauseDate = $this->_findActiveRevisionRequestDate($roundObj, $decisions);
-			}
-		}
+                $cumulativeWorkingDays += $durationWorkingDays;
+                $historyList[] = [
+                    'round' => $roundNum,
+                    'dateStart' => $startDate,
+                    'dateEnd' => $endDate,
+                    'workingDays' => $durationWorkingDays,
+                    'limitWorkingDays' => $limit,
+                    'finalStatus' => $finalStatus,
+                    'finalStatusLabel' => $finalStatus === 'overdue' ? __('plugins.generic.editorialReminderDashboard.roundHistory.completedOverdue', ['days' => $durationWorkingDays]) : __('plugins.generic.editorialReminderDashboard.roundHistory.completedOnTime', ['days' => $durationWorkingDays]),
+                ];
+            } else {
+                $currentRoundNumber = $roundNum;
+                $currentRoundStartDate = $startDate;
+                // Check if active round is currently waiting for author revisions
+                $currentRoundPauseDate = $this->_findActiveRevisionRequestDate($roundObj, $decisions);
+            }
+        }
 
-		return [
-			'currentRoundNumber' => $currentRoundNumber,
-			'currentRoundStartDate' => $currentRoundStartDate,
-			'currentRoundPauseDate' => $currentRoundPauseDate,
-			'historyList' => $historyList,
-			'cumulativeWorkingDays' => $cumulativeWorkingDays,
-		];
-	}
+        return [
+            'currentRoundNumber' => $currentRoundNumber,
+            'currentRoundStartDate' => $currentRoundStartDate,
+            'currentRoundPauseDate' => $currentRoundPauseDate,
+            'historyList' => $historyList,
+            'cumulativeWorkingDays' => $cumulativeWorkingDays,
+        ];
+    }
 
-	/**
-	 * Determine the start date of a specific review round.
+    /**
+     * Determine the start date of a specific review round.
      * Priority:
      * 1. Editor decision "Send to Review" (8 or 3) for Round 1, or "New Review Round" (16) for Round 2+.
      * 2. Fallback: Earliest reviewer `date_assigned` in that round.
@@ -831,53 +837,53 @@ class EditorialReminderService
         return $found;
     }
 
-	/**
-	 * Check if the current active review round is paused waiting for author revisions.
-	 *
-	 * @param object $roundObj
-	 * @param array $decisions
-	 * @return string|null Pause date 'Y-m-d' if waiting for author revisions, or null
-	 */
-	protected function _findActiveRevisionRequestDate($roundObj, $decisions)
-	{
-		$roundStatus = (int) $roundObj->status;
-		// REVIEW_ROUND_STATUS_REVISIONS_REQUESTED (1), REVIEW_ROUND_STATUS_RESUBMIT_FOR_REVIEW (2)
-		if (!in_array($roundStatus, [1, 2], true)) {
-			return null;
-		}
+    /**
+     * Check if the current active review round is paused waiting for author revisions.
+     *
+     * @param object $roundObj
+     * @param array $decisions
+     * @return string|null Pause date 'Y-m-d' if waiting for author revisions, or null
+     */
+    protected function _findActiveRevisionRequestDate($roundObj, $decisions)
+    {
+        $roundStatus = (int) $roundObj->status;
+        // REVIEW_ROUND_STATUS_REVISIONS_REQUESTED (1), REVIEW_ROUND_STATUS_RESUBMIT_FOR_REVIEW (2)
+        if (!in_array($roundStatus, [1, 2], true)) {
+            return null;
+        }
 
-		$roundNum = (int) $roundObj->round;
-		$latestRevDecisionDate = null;
-		foreach ($decisions as $d) {
-			if ((int) $d->round === $roundNum && in_array((int) $d->decision, [2, 3], true) && !empty($d->date_decided)) {
-				$latestRevDecisionDate = substr((string) $d->date_decided, 0, 10);
-			}
-		}
+        $roundNum = (int) $roundObj->round;
+        $latestRevDecisionDate = null;
+        foreach ($decisions as $d) {
+            if ((int) $d->round === $roundNum && in_array((int) $d->decision, [2, 3], true) && !empty($d->date_decided)) {
+                $latestRevDecisionDate = substr((string) $d->date_decided, 0, 10);
+            }
+        }
 
-		return $latestRevDecisionDate;
-	}
+        return $latestRevDecisionDate;
+    }
 
-	/**
-	 * Check whether a final decision (Accept=1, Decline=4, Initial Decline=9) has already been made.
-	 *
-	 * @param array $decisions
-	 * @param int $stageId
-	 * @param int $roundNum
-	 * @return bool
-	 */
-	protected function _hasFinalReviewDecision($decisions, $stageId, $roundNum)
-	{
-		foreach ($decisions as $d) {
-			$dec = (int) $d->decision;
-			if (in_array($dec, [1, 4, 9], true) && (int) $d->round >= $roundNum) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * Check whether a final decision (Accept=1, Decline=4, Initial Decline=9) has already been made.
+     *
+     * @param array $decisions
+     * @param int $stageId
+     * @param int $roundNum
+     * @return bool
+     */
+    protected function _hasFinalReviewDecision($decisions, $stageId, $roundNum)
+    {
+        foreach ($decisions as $d) {
+            $dec = (int) $d->decision;
+            if (in_array($dec, [1, 4, 9], true) && (int) $d->round >= $roundNum) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Build detailed reviewer list for the active review round.
+    /**
+     * Build detailed reviewer list for the active review round.
      *
      * @param array $assignments
      * @param int $roundNum
@@ -950,103 +956,103 @@ class EditorialReminderService
         return $list;
     }
 
-	/**
-	 * Determine the cause of delay for a review round.
-	 * - Waiting for reviewers: at least one active reviewer has not completed their review.
-	 * - Waiting for editor decision: all active reviewers have completed (with >= 1 completed review) and no decision yet.
-	 * - No reviewers assigned: 0 active reviewers (and 0 completed reviews).
-	 *
-	 * @param array $reviewers
-	 * @param array $decisions
-	 * @param int $roundNum
-	 * @param int $stageId
-	 * @param bool $isPausedForRevision
-	 * @return array {key: string, label: string}
-	 */
-	protected function _determineReviewDelayCause($reviewers, $decisions, $roundNum, $stageId, $isPausedForRevision = false)
-	{
-		if ($isPausedForRevision) {
-			return [
-				'key' => 'waiting_author_revision',
-				'label' => __('plugins.generic.editorialReminderDashboard.delayCause.waitingAuthorRevision'),
-			];
-		}
+    /**
+     * Determine the cause of delay for a review round.
+     * - Waiting for reviewers: at least one active reviewer has not completed their review.
+     * - Waiting for editor decision: all active reviewers have completed (with >= 1 completed review) and no decision yet.
+     * - No reviewers assigned: 0 active reviewers (and 0 completed reviews).
+     *
+     * @param array $reviewers
+     * @param array $decisions
+     * @param int $roundNum
+     * @param int $stageId
+     * @param bool $isPausedForRevision
+     * @return array {key: string, label: string}
+     */
+    protected function _determineReviewDelayCause($reviewers, $decisions, $roundNum, $stageId, $isPausedForRevision = false)
+    {
+        if ($isPausedForRevision) {
+            return [
+                'key' => 'waiting_author_revision',
+                'label' => __('plugins.generic.editorialReminderDashboard.delayCause.waitingAuthorRevision'),
+            ];
+        }
 
-		$activeCount = 0;
-		$completedCount = 0;
-		$incompleteActiveCount = 0;
+        $activeCount = 0;
+        $completedCount = 0;
+        $incompleteActiveCount = 0;
 
-		foreach ($reviewers as $rev) {
-			if ($rev['isActive']) {
-				$activeCount++;
-				if ($rev['isCompleted']) {
-					$completedCount++;
-				} else {
-					$incompleteActiveCount++;
-				}
-			}
-		}
+        foreach ($reviewers as $rev) {
+            if ($rev['isActive']) {
+                $activeCount++;
+                if ($rev['isCompleted']) {
+                    $completedCount++;
+                } else {
+                    $incompleteActiveCount++;
+                }
+            }
+        }
 
-		if ($activeCount === 0 || ($incompleteActiveCount === 0 && $completedCount === 0)) {
-			return [
-				'key' => 'no_reviewer_assigned',
-				'label' => __('plugins.generic.editorialReminderDashboard.delayCause.noReviewerAssigned'),
-			];
-		}
+        if ($activeCount === 0 || ($incompleteActiveCount === 0 && $completedCount === 0)) {
+            return [
+                'key' => 'no_reviewer_assigned',
+                'label' => __('plugins.generic.editorialReminderDashboard.delayCause.noReviewerAssigned'),
+            ];
+        }
 
-		if ($incompleteActiveCount > 0) {
-			return [
-				'key' => 'waiting_reviewer',
-				'label' => __('plugins.generic.editorialReminderDashboard.delayCause.waitingReviewer'),
-			];
-		}
+        if ($incompleteActiveCount > 0) {
+            return [
+                'key' => 'waiting_reviewer',
+                'label' => __('plugins.generic.editorialReminderDashboard.delayCause.waitingReviewer'),
+            ];
+        }
 
-		return [
-			'key' => 'waiting_editor_decision',
-			'label' => __('plugins.generic.editorialReminderDashboard.delayCause.waitingEditorDecision'),
-		];
-	}
+        return [
+            'key' => 'waiting_editor_decision',
+            'label' => __('plugins.generic.editorialReminderDashboard.delayCause.waitingEditorDecision'),
+        ];
+    }
 
-	/**
-	 * Format human-readable remaining/overdue working days text for Review stage.
-	 *
-	 * @param array $eval
-	 * @param bool $isPaused
-	 * @return string
-	 */
-	protected function _formatReviewTimeRemaining($eval, $isPaused = false)
-	{
-		if ($eval['status'] === 'overdue') {
-			return __('plugins.generic.editorialReminderDashboard.time.overdueWorkingDays', ['days' => $eval['overdueWorkingDays']]);
-		}
-		if ($eval['remainingWorkingDays'] === 0) {
-			return __('plugins.generic.editorialReminderDashboard.time.dueToday');
-		}
-		return __('plugins.generic.editorialReminderDashboard.time.remainingWorkingDays', ['days' => $eval['remainingWorkingDays']]);
-	}
+    /**
+     * Format human-readable remaining/overdue working days text for Review stage.
+     *
+     * @param array $eval
+     * @param bool $isPaused
+     * @return string
+     */
+    protected function _formatReviewTimeRemaining($eval, $isPaused = false)
+    {
+        if ($eval['status'] === 'overdue') {
+            return __('plugins.generic.editorialReminderDashboard.time.overdueWorkingDays', ['days' => $eval['overdueWorkingDays']]);
+        }
+        if ($eval['remainingWorkingDays'] === 0) {
+            return __('plugins.generic.editorialReminderDashboard.time.dueToday');
+        }
+        return __('plugins.generic.editorialReminderDashboard.time.remainingWorkingDays', ['days' => $eval['remainingWorkingDays']]);
+    }
 
-	/**
-	 * Format human-readable remaining/overdue calendar days text for Copyediting stage.
-	 *
-	 * @param array $copyEval
-	 * @return string
-	 */
-	protected function _formatCopyeditingTimeRemaining($copyEval)
-	{
-		if ($copyEval['status'] === 'no_target') {
-			return __('plugins.generic.editorialReminderDashboard.status.noTarget');
-		}
-		if ($copyEval['status'] === 'overdue') {
-			return __('plugins.generic.editorialReminderDashboard.time.overdueTargetDay', ['days' => $copyEval['overdueCalendarDays']]);
-		}
-		if (!empty($copyEval['isDueToday'])) {
-			return __('plugins.generic.editorialReminderDashboard.time.dueToday');
-		}
-		return __('plugins.generic.editorialReminderDashboard.time.remainingCalendarDays', ['days' => $copyEval['remainingCalendarDays']]);
-	}
+    /**
+     * Format human-readable remaining/overdue calendar days text for Copyediting stage.
+     *
+     * @param array $copyEval
+     * @return string
+     */
+    protected function _formatCopyeditingTimeRemaining($copyEval)
+    {
+        if ($copyEval['status'] === 'no_target') {
+            return __('plugins.generic.editorialReminderDashboard.status.noTarget');
+        }
+        if ($copyEval['status'] === 'overdue') {
+            return __('plugins.generic.editorialReminderDashboard.time.overdueTargetDay', ['days' => $copyEval['overdueCalendarDays']]);
+        }
+        if (!empty($copyEval['isDueToday'])) {
+            return __('plugins.generic.editorialReminderDashboard.time.dueToday');
+        }
+        return __('plugins.generic.editorialReminderDashboard.time.remainingCalendarDays', ['days' => $copyEval['remainingCalendarDays']]);
+    }
 
-	/**
-	 * Get localized status label.
+    /**
+     * Get localized status label.
      *
      * @param string $status
      * @return string
@@ -1087,32 +1093,32 @@ class EditorialReminderService
         }
     }
 
-	/**
-	 * Format a 'Y-m-d' date into a concise localized date like "28 Oct" or "6 Nov".
-	 *
-	 * @param string|null $ymd
-	 * @param string $locale
-	 * @return string
-	 */
-	public function formatShortDate($ymd, $locale = 'en_US')
-	{
-		if (empty($ymd) || $ymd === '—') {
-			return '—';
-		}
-		$ts = strtotime(substr((string) $ymd, 0, 10));
-		if ($ts === false) {
-			return (string) $ymd;
-		}
+    /**
+     * Format a 'Y-m-d' date into a concise localized date like "28 Oct" or "6 Nov".
+     *
+     * @param string|null $ymd
+     * @param string $locale
+     * @return string
+     */
+    public function formatShortDate($ymd, $locale = 'en_US')
+    {
+        if (empty($ymd) || $ymd === '—') {
+            return '—';
+        }
+        $ts = strtotime(substr((string) $ymd, 0, 10));
+        if ($ts === false) {
+            return (string) $ymd;
+        }
 
-		$day = (int) date('j', $ts);
-		$monthNum = (int) date('n', $ts);
+        $day = (int) date('j', $ts);
+        $monthNum = (int) date('n', $ts);
 
-		$monthKey = 'plugins.generic.editorialReminderDashboard.month.short.' . $monthNum;
-		$mName = __($monthKey, [], $locale);
-		if ($mName === $monthKey) {
-			$mName = date('M', $ts);
-		}
+        $monthKey = 'plugins.generic.editorialReminderDashboard.month.short.' . $monthNum;
+        $mName = __($monthKey, [], $locale);
+        if ($mName === $monthKey) {
+            $mName = date('M', $ts);
+        }
 
-		return $day . ' ' . $mName;
-	}
+        return $day . ' ' . $mName;
+    }
 }

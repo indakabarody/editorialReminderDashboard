@@ -91,6 +91,11 @@
 	border-radius: 999px;
 }
 
+.er-role-pill--future {
+	background-color: #fef3c7;
+	color: #92400e;
+}
+
 /* Summary Cards */
 .er-cards {
 	display: grid;
@@ -236,6 +241,45 @@
 	padding: 0.28rem 0.5rem;
 	font-size: 0.8rem;
 	max-width: 210px;
+}
+
+.er-no-issues-notice {
+	display: inline-flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	align-items: flex-start;
+}
+
+.er-btn--link-inline {
+	display: inline-flex;
+	align-items: center;
+	background: #f0f9ff;
+	border: 1px dashed #0284c7;
+	color: #0284c7;
+	padding: 0.18rem 0.45rem;
+	font-size: 0.72rem;
+	font-weight: 600;
+	border-radius: 4px;
+	text-decoration: none;
+	line-height: 1.2;
+	transition: all 0.15s ease;
+}
+
+.er-btn--link-inline:hover {
+	background: #e0f2fe;
+	color: #0369a1;
+	border-color: #0369a1;
+}
+
+.er-link {
+	color: #0284c7;
+	text-decoration: underline;
+	font-weight: 500;
+	margin-left: 0.35rem;
+}
+
+.er-link:hover {
+	color: #0369a1;
 }
 
 .er-exports {

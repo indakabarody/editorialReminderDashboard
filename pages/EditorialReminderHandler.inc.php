@@ -19,52 +19,67 @@ require_once dirname(__DIR__) . '/classes/EditorialReminderExporter.inc.php';
 
 class EditorialReminderHandler extends Handler
 {
-	/** @copydoc PKPHandler::_isBackendPage */
-	public $_isBackendPage = true;
+    /** @copydoc PKPHandler::_isBackendPage */
+    public $_isBackendPage = true;
 
-	/** @var EditorialReminderDashboardPlugin */
-	protected static $_plugin;
+    /** @var EditorialReminderDashboardPlugin */
+    protected static $_plugin;
 
-	/**
-	 * Inject the plugin instance.
-	 *
-	 * @param EditorialReminderDashboardPlugin $plugin
-	 * @return void
-	 */
-	public static function setPlugin($plugin)
-	{
-		self::$_plugin = $plugin;
-	}
+    /**
+     * Inject the plugin instance.
+     *
+     * @param EditorialReminderDashboardPlugin $plugin
+     * @return void
+     */
+    public static function setPlugin($plugin)
+    {
+        self::$_plugin = $plugin;
+    }
 
-	/**
-	 * Get the plugin instance.
-	 *
-	 * @return EditorialReminderDashboardPlugin
-	 */
-	public static function getPlugin()
-	{
-		return self::$_plugin;
-	}
+    /**
+     * Get the plugin instance.
+     *
+     * @return EditorialReminderDashboardPlugin
+     */
+    public static function getPlugin()
+    {
+        return self::$_plugin;
+    }
 
-	/**
-	 * Constructor.
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-	}
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-	/**
-	 * Authorize request based on OJS user roles and editorial permissions.
-	 *
-	 * @copydoc PKPHandler::authorize()
-	 */
+    /**
+     * Authorize request based on OJS user roles and editorial permissions.
+     *
+     * @copydoc PKPHandler::authorize()
+     */
     public function authorize($request, &$args, $roleAssignments)
     {
         $user = $request->getUser();
         if (!$user) {
             Validation::redirectLogin();
             return false;
+        }
+
+        // Only Site Administrator and Journal Manager are allowed to access this plugin
+        $isSiteAdmin = Validation::isSiteAdmin();
+        if (!$isSiteAdmin) {
+            $context = $request->getContext();
+            if (!$context) {
+                return false;
+            }
+            $plugin = self::getPlugin();
+            $service = new EditorialReminderService($plugin);
+            $flags = $service->getDAO()->getUserContextRoleFlags((int) $user->getId(), (int) $context->getId());
+            if (empty($flags['isManager'])) {
+                return false;
+            }
         }
 
         return parent::authorize($request, $args, $roleAssignments);
@@ -122,6 +137,8 @@ class EditorialReminderHandler extends Handler
             'settings' => $dashboardData['settings'],
             'holidays' => $dashboardData['holidays'],
             'unpublishedIssues' => $dashboardData['unpublishedIssues'],
+            'futureIssues' => $dashboardData['futureIssues'],
+            'backIssues' => $dashboardData['backIssues'],
             'allIssues' => $dashboardData['issues'],
             'editorsFilterMap' => $dashboardData['editorsFilterMap'],
             'activeFilters' => $filters,
@@ -138,6 +155,7 @@ class EditorialReminderHandler extends Handler
             'deleteHolidayUrl' => $dispatcher->url($request, ROUTE_PAGE, $context->getPath(), 'editorialReminder', 'deleteHoliday'),
             'saveSettingsUrl' => $dispatcher->url($request, ROUTE_PAGE, $context->getPath(), 'editorialReminder', 'saveSettings'),
             'workflowBaseUrl' => $dispatcher->url($request, ROUTE_PAGE, $context->getPath(), 'workflow', 'index'),
+            'futureIssuesUrl' => $dispatcher->url($request, ROUTE_PAGE, $context->getPath(), 'manageIssues') . '#futureIssues',
         ]);
 
         $templateMgr->display($plugin->getTemplateResource('dashboard.tpl'));
@@ -158,7 +176,7 @@ class EditorialReminderHandler extends Handler
         $dao = $service->getDAO();
         $user = $request->getUser();
 
-        if (!$service->isUserDirectorOrSiteAdmin($user)) {
+        if (!Validation::isSiteAdmin()) {
             $this->_renderAccessDenied($request);
             return;
         }
@@ -280,7 +298,7 @@ class EditorialReminderHandler extends Handler
         $dao = $service->getDAO();
         $user = $request->getUser();
 
-        if (!$service->isUserDirectorOrSiteAdmin($user)) {
+        if (!Validation::isSiteAdmin()) {
             $this->_renderAccessDenied($request);
             return;
         }
@@ -608,91 +626,91 @@ class EditorialReminderHandler extends Handler
         ]);
     }
 
-	/**
-	 * Determine user's access level for a given journal according to editorial roles.
-	 *
-	 * @param User $user
-	 * @param int $contextId
-	 * @param EditorialReminderService $service
-	 * @param EditorialReminderDAO $dao
-	 * @return array
-	 */
-	protected function _resolveJournalAccess($user, $contextId, $service, $dao)
-	{
-		$flags = $dao->getUserContextRoleFlags((int) $user->getId(), (int) $contextId);
-		$isDirector = $service->isUserDirectorOrSiteAdmin($user) && !$flags['isSiteAdmin'];
+    /**
+     * Determine user's access level for a given journal according to editorial roles.
+     *
+     * @param User $user
+     * @param int $contextId
+     * @param EditorialReminderService $service
+     * @param EditorialReminderDAO $dao
+     * @return array
+     */
+    protected function _resolveJournalAccess($user, $contextId, $service, $dao)
+    {
+        $flags = $dao->getUserContextRoleFlags((int) $user->getId(), (int) $contextId);
+        $isSiteAdmin = !empty($flags['isSiteAdmin']) || Validation::isSiteAdmin();
+        $isManager = !empty($flags['isManager']);
 
-		$canView = $flags['isSiteAdmin'] || $isDirector || $flags['isManager'] || $flags['isSubEditor'];
-		$isSectionEditorOnly = $flags['isSubEditor'] && !$flags['isManager'] && !$flags['isSiteAdmin'] && !$isDirector;
+        $canView = $isSiteAdmin || $isManager;
 
-		return [
-			'canView' => $canView,
-			'isSiteAdmin' => $flags['isSiteAdmin'],
-			'isDirector' => $isDirector,
-			'isManager' => $flags['isManager'],
-			'isSubEditor' => $flags['isSubEditor'],
-			'isSectionEditorOnly' => $isSectionEditorOnly,
-			'restrictToEditorId' => $isSectionEditorOnly ? (int) $user->getId() : null,
-			'canManageSettings' => $flags['isSiteAdmin'] || $flags['isManager'],
-			'canEditTargetIssue' => $flags['isSiteAdmin'] || $flags['isManager'] || $flags['isSubEditor'],
-			'canAccessSiteDashboard' => $flags['isSiteAdmin'] || $isDirector,
-			'canViewReviewerIdentity' => $canView,
-		];
-	}
+        return [
+            'canView' => $canView,
+            'isSiteAdmin' => $isSiteAdmin,
+            'isDirector' => false,
+            'isManager' => $isManager,
+            'isSubEditor' => false,
+            'isSectionEditorOnly' => false,
+            'restrictToEditorId' => null,
+            'canManageSettings' => $canView,
+            'canEditTargetIssue' => $canView,
+            'canAccessSiteDashboard' => $isSiteAdmin,
+            'canViewReviewerIdentity' => $canView,
+        ];
+    }
 
-	/**
-	 * Read filter query parameters from the request.
-	 *
-	 * @param PKPRequest $request
-	 * @return array
-	 */
-	protected function _readFiltersFromRequest($request)
-	{
-		return [
-			'stage' => trim((string) $request->getUserVar('stage')) ?: 'all',
-			'status' => trim((string) $request->getUserVar('status')) ?: 'all',
-			'editorId' => trim((string) $request->getUserVar('editorId')) ?: 'all',
-			'issueId' => trim((string) $request->getUserVar('issueId')) ?: 'all',
-			'search' => trim((string) $request->getUserVar('search')),
-			'sort' => trim((string) $request->getUserVar('sort')) ?: 'urgency',
-		];
-	}
+    /**
+     * Read filter query parameters from the request.
+     *
+     * @param PKPRequest $request
+     * @return array
+     */
+    protected function _readFiltersFromRequest($request)
+    {
+        return [
+            'stage' => trim((string) $request->getUserVar('stage')) ?: 'all',
+            'status' => trim((string) $request->getUserVar('status')) ?: 'all',
+            'editorId' => trim((string) $request->getUserVar('editorId')) ?: 'all',
+            'issueId' => trim((string) $request->getUserVar('issueId')) ?: 'all',
+            'search' => trim((string) $request->getUserVar('search')),
+            'sort' => trim((string) $request->getUserVar('sort')) ?: 'urgency',
+        ];
+    }
 
-	/**
-	 * Build a concise human-readable description of active filters for exports.
-	 *
-	 * @param array $filters
-	 * @param array $dashboardData
-	 * @return string
-	 */
-	protected function _describeActiveFilters($filters, $dashboardData)
-	{
-		$parts = [];
-		$parts[] = __('plugins.generic.editorialReminderDashboard.filter.stage') . ': ' . ($filters['stage'] ?: 'all');
-		$parts[] = __('plugins.generic.editorialReminderDashboard.filter.status') . ': ' . ($filters['status'] ?: 'all');
+    /**
+     * Build a concise human-readable description of active filters for exports.
+     *
+     * @param array $filters
+     * @param array $dashboardData
+     * @return string
+     */
+    protected function _describeActiveFilters($filters, $dashboardData)
+    {
+        $parts = [];
+        $parts[] = __('plugins.generic.editorialReminderDashboard.filter.stage') . ': ' . ($filters['stage'] ?: 'all');
+        $parts[] = __('plugins.generic.editorialReminderDashboard.filter.status') . ': ' . ($filters['status'] ?: 'all');
 
-		if ($filters['editorId'] !== 'all' && $filters['editorId'] !== '') {
-			$edId = (int) $filters['editorId'];
-			$edName = isset($dashboardData['editorsFilterMap'][$edId]) ? $dashboardData['editorsFilterMap'][$edId] : '#' . $edId;
-			$parts[] = __('plugins.generic.editorialReminderDashboard.filter.editor') . ': ' . $edName;
-		}
-		if ($filters['issueId'] !== 'all' && $filters['issueId'] !== '') {
-			$issId = $filters['issueId'];
-			if ($issId === 'none') {
-				$parts[] = __('plugins.generic.editorialReminderDashboard.filter.issue') . ': ' . __('plugins.generic.editorialReminderDashboard.status.noTarget');
-			} elseif (isset($dashboardData['issues'][(int) $issId])) {
-				$parts[] = __('plugins.generic.editorialReminderDashboard.filter.issue') . ': ' . $dashboardData['issues'][(int) $issId]['shortLabel'];
-			}
-		}
-		if (!empty($filters['search'])) {
-			$parts[] = __('common.search') . ': "' . $filters['search'] . '"';
-		}
+        if ($filters['editorId'] !== 'all' && $filters['editorId'] !== '') {
+            $edId = (int) $filters['editorId'];
+            $edName = isset($dashboardData['editorsFilterMap'][$edId]) ? $dashboardData['editorsFilterMap'][$edId] : '#' . $edId;
+            $parts[] = __('plugins.generic.editorialReminderDashboard.filter.editor') . ': ' . $edName;
+        }
+        if ($filters['issueId'] !== 'all' && $filters['issueId'] !== '') {
+            $issId = $filters['issueId'];
+            if ($issId === 'none') {
+                $parts[] = __('plugins.generic.editorialReminderDashboard.filter.issue') . ': ' . __('plugins.generic.editorialReminderDashboard.status.noTarget');
+            } elseif (isset($dashboardData['issues'][(int) $issId])) {
+                $parts[] = __('plugins.generic.editorialReminderDashboard.filter.issue') . ': ' . $dashboardData['issues'][(int) $issId]['shortLabel'];
+            }
+        }
+        if (!empty($filters['search'])) {
+            $parts[] = __('common.search') . ': "' . $filters['search'] . '"';
+        }
 
-		return implode(' | ', $parts);
-	}
+        return implode(' | ', $parts);
+    }
 
-	/**
-	 * Render 403 Access Denied response.
+    /**
+     * Render 403 Access Denied response.
      *
      * @param PKPRequest $request
      * @return void

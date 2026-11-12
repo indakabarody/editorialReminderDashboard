@@ -313,6 +313,18 @@ msgstr "Dibatalkan"
 msgid "plugins.generic.editorialReminderDashboard.copyediting.selectTargetIssue"
 msgstr "Pilih target issue"
 
+msgid "plugins.generic.editorialReminderDashboard.copyediting.createFutureIssue"
+msgstr "Buat Terbitan Mendatang"
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.createFutureIssueHint"
+msgstr "Belum ada terbitan mendatang di OJS. Klik untuk membuat terbitan baru di OJS."
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.noUnpublishedIssuesHelp"
+msgstr "Belum ada terbitan mendatang yang belum terbit di jurnal ini."
+
+msgid "plugins.generic.editorialReminderDashboard.copyediting.openFutureIssues"
+msgstr "Buka Terbitan Mendatang"
+
 msgid "plugins.generic.editorialReminderDashboard.copyediting.targetIssueHeading"
 msgstr "Target Issue Copyediting"
 
