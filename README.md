@@ -10,7 +10,7 @@ Distributed under the GNU GPL v3. For full terms see the file `LICENSE`.
 ## Key Features
 
 - **Working-Day Calculation Engine**:
-  - Counts Monday through Friday as working days, excluding Saturdays, Sundays, and dates configured in the National Holidays & Collective Leave table (`editorial_reminder_holidays`).
+  - Configurable active working days of the week via checkboxes (Monday through Sunday, defaulting to Monday through Friday), excluding non-selected days and dates configured in the National Holidays & Collective Leave table (`editorial_reminder_holidays`).
   - Supports configurable timezone per journal or server default (`Asia/Jakarta`).
 - **Review Stage Monitoring**:
   - Configurable Round 1 limit (14–21 working days, default: 21 working days) and Round 2+ limit (default: 7 working days).

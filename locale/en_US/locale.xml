@@ -185,5 +185,15 @@
 	<message key="plugins.generic.editorialReminderDashboard.month.short.11">Nov</message>
 	<message key="plugins.generic.editorialReminderDashboard.month.short.12">Dec</message>
 	<message key="plugins.generic.editorialReminderDashboard.audit.details">Details</message>
+	<message key="plugins.generic.editorialReminderDashboard.settings.workingDays">Active Working Days</message>
+	<message key="plugins.generic.editorialReminderDashboard.settings.workingDaysDesc">Select the days of the week counted as working days for Review Round 1 &amp; Round 2+ calculations (default: Monday through Friday).</message>
+	<message key="plugins.generic.editorialReminderDashboard.error.minOneWorkingDay">Please select at least one active working day.</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.1">Monday</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.2">Tuesday</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.3">Wednesday</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.4">Thursday</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.5">Friday</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.6">Saturday</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.7">Sunday</message>
 </locale>
 

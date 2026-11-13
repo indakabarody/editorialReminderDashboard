@@ -78,6 +78,19 @@
 			}
 		{/fbvFormSection}
 
+		{fbvFormSection label="plugins.generic.editorialReminderDashboard.settings.workingDays" description="plugins.generic.editorialReminderDashboard.settings.workingDaysDesc" list=true}
+			{foreach from=[1,2,3,4,5,6,7] item=dayNum}
+				{fbvElement
+					type="checkbox"
+					name="workingDays[]"
+					id="workingDays_`$dayNum`"
+					value=$dayNum
+					checked=!empty($workingDaysMap[$dayNum])
+					label="plugins.generic.editorialReminderDashboard.day.`$dayNum`"
+				}
+			{/foreach}
+		{/fbvFormSection}
+
 		{if $isSiteAdmin}
 			{fbvFormSection label="plugins.generic.editorialReminderDashboard.settings.directorUsernames"}
 				{fbvElement

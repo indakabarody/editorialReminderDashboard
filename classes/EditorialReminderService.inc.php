@@ -46,6 +46,37 @@ class EditorialReminderService
     }
 
     /**
+     * Normalize a raw working days value (array or comma-separated string of ISO-8601 day numbers 1..7).
+     * Defaults to Monday through Friday ([1, 2, 3, 4, 5]) if empty or invalid.
+     *
+     * @param array|string|null $raw
+     * @return array<int> Sorted unique array of ISO-8601 day integers (1=Mon .. 7=Sun)
+     */
+    public function normalizeWorkingDays($raw)
+    {
+        if (is_string($raw)) {
+            $raw = preg_split('/[\s,]+/', trim($raw), -1, PREG_SPLIT_NO_EMPTY);
+        }
+
+        $days = [];
+        if (is_array($raw)) {
+            foreach ($raw as $val) {
+                $d = (int) $val;
+                if ($d >= 1 && $d <= 7) {
+                    $days[$d] = $d;
+                }
+            }
+        }
+
+        if (empty($days)) {
+            return [1, 2, 3, 4, 5];
+        }
+
+        ksort($days);
+        return array_values($days);
+    }
+
+    /**
      * Get effective settings for a journal (or global defaults when $contextId = 0).
      *
      * @param int $contextId Journal ID or 0 for site-level
@@ -66,6 +97,8 @@ class EditorialReminderService
         $globalRound2Warning = (int) $this->_plugin->getSetting(0, 'round2Warning') ?: 2;
         $globalCopyeditingWarning = (int) $this->_plugin->getSetting(0, 'copyeditingWarning') ?: 10;
         $globalTimezone = (string) $this->_plugin->getSetting(0, 'timezone') ?: $defaultTz;
+        $globalWorkingDaysRaw = $this->_plugin->getSetting(0, 'workingDays');
+        $globalWorkingDays = $this->normalizeWorkingDays($globalWorkingDaysRaw);
         $directorUsernames = (string) $this->_plugin->getSetting(0, 'directorUsernames');
         $enableDailyDigest = (bool) $this->_plugin->getSetting(0, 'enableDailyDigest');
         $enableWeeklyDigest = (bool) $this->_plugin->getSetting(0, 'enableWeeklyDigest');
@@ -78,6 +111,9 @@ class EditorialReminderService
                 'round2Warning' => max(1, $globalRound2Warning),
                 'copyeditingWarning' => max(1, $globalCopyeditingWarning),
                 'timezone' => $globalTimezone,
+                'workingDays' => $globalWorkingDays,
+                'workingDaysStr' => implode(',', $globalWorkingDays),
+                'workingDaysMap' => array_fill_keys($globalWorkingDays, true),
                 'directorUsernames' => $directorUsernames,
                 'enableDailyDigest' => $enableDailyDigest,
                 'enableWeeklyDigest' => $enableWeeklyDigest,
@@ -90,11 +126,16 @@ class EditorialReminderService
         $r2Warn = $this->_plugin->getSetting($ctxId, 'round2Warning');
         $ceWarn = $this->_plugin->getSetting($ctxId, 'copyeditingWarning');
         $tz = $this->_plugin->getSetting($ctxId, 'timezone');
+        $jWorkingDaysRaw = $this->_plugin->getSetting($ctxId, 'workingDays');
         $jDaily = $this->_plugin->getSetting($ctxId, 'enableDailyDigest');
         $jWeekly = $this->_plugin->getSetting($ctxId, 'enableWeeklyDigest');
 
         $round1Limit = $r1Limit !== null && $r1Limit !== '' ? (int) $r1Limit : $globalRound1Limit;
         $round1Limit = max(14, min(21, $round1Limit)); // Allowed range: 14-21 working days
+
+        $workingDays = $jWorkingDaysRaw !== null && $jWorkingDaysRaw !== '' ? $this->normalizeWorkingDays($jWorkingDaysRaw) : $globalWorkingDays;
+
+        $workingDays = $jWorkingDaysRaw !== null && $jWorkingDaysRaw !== '' ? $this->normalizeWorkingDays($jWorkingDaysRaw) : $globalWorkingDays;
 
         return [
             'round1Limit' => $round1Limit,
@@ -103,6 +144,9 @@ class EditorialReminderService
             'round2Warning' => $r2Warn !== null && $r2Warn !== '' ? max(1, (int) $r2Warn) : $globalRound2Warning,
             'copyeditingWarning' => $ceWarn !== null && $ceWarn !== '' ? max(1, (int) $ceWarn) : $globalCopyeditingWarning,
             'timezone' => !empty($tz) ? (string) $tz : $globalTimezone,
+            'workingDays' => $workingDays,
+            'workingDaysStr' => implode(',', $workingDays),
+            'workingDaysMap' => array_fill_keys($workingDays, true),
             'directorUsernames' => $directorUsernames,
             'enableDailyDigest' => $jDaily !== null && $jDaily !== '' ? (bool) $jDaily : $enableDailyDigest,
             'enableWeeklyDigest' => $jWeekly !== null && $jWeekly !== '' ? (bool) $jWeekly : $enableWeeklyDigest,
@@ -152,7 +196,7 @@ class EditorialReminderService
         $settings = $this->getContextSettings($ctxId);
         $holidays = $this->_dao->getHolidays($ctxId);
         $holidayDates = array_column($holidays, 'date');
-        $calculator = new WorkingDayCalculator($holidayDates, $settings['timezone']);
+        $calculator = new WorkingDayCalculator($holidayDates, $settings['timezone'], $settings['workingDays']);
 
         $issuesMap = $this->_dao->getIssuesWithTargetDates($ctxId, $locale);
         $futureIssues = [];
@@ -260,7 +304,7 @@ class EditorialReminderService
             $settingsByJournal[$jid] = $jSettings;
             $jHolidays = $this->_dao->getHolidays($jid);
             $jHolidayDates = array_unique(array_merge($globalHolidayDates, array_column($jHolidays, 'date')));
-            $calculatorsByJournal[$jid] = new WorkingDayCalculator($jHolidayDates, $jSettings['timezone']);
+            $calculatorsByJournal[$jid] = new WorkingDayCalculator($jHolidayDates, $jSettings['timezone'], $jSettings['workingDays']);
         }
 
         $issuesMap = $this->_dao->getIssuesWithTargetDates($journalIds, $locale);
@@ -495,7 +539,7 @@ class EditorialReminderService
             $stageId = (int) $subRow->stage_id;
 
             $settings = isset($settingsByJournal[$ctxId]) ? $settingsByJournal[$ctxId] : $this->getContextSettings($ctxId);
-            $calculator = isset($calculatorsByJournal[$ctxId]) ? $calculatorsByJournal[$ctxId] : new WorkingDayCalculator([], $settings['timezone']);
+            $calculator = isset($calculatorsByJournal[$ctxId]) ? $calculatorsByJournal[$ctxId] : new WorkingDayCalculator([], $settings['timezone'], $settings['workingDays']);
 
             $title = isset($batch['titles'][$subId]) && $batch['titles'][$subId] !== '' ? $batch['titles'][$subId] : __('common.untitled');
 

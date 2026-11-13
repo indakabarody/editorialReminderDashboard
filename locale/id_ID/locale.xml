@@ -185,5 +185,15 @@
 	<message key="plugins.generic.editorialReminderDashboard.month.short.11">Nov</message>
 	<message key="plugins.generic.editorialReminderDashboard.month.short.12">Des</message>
 	<message key="plugins.generic.editorialReminderDashboard.audit.details">Detail</message>
+	<message key="plugins.generic.editorialReminderDashboard.settings.workingDays">Hari Kerja Aktif</message>
+	<message key="plugins.generic.editorialReminderDashboard.settings.workingDaysDesc">Pilih hari dalam seminggu yang dihitung sebagai hari kerja untuk Review Round 1 &amp; Round 2+ (default: Senin sampai Jumat).</message>
+	<message key="plugins.generic.editorialReminderDashboard.error.minOneWorkingDay">Minimal pilih 1 hari kerja aktif.</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.1">Senin</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.2">Selasa</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.3">Rabu</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.4">Kamis</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.5">Jumat</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.6">Sabtu</message>
+	<message key="plugins.generic.editorialReminderDashboard.day.7">Minggu</message>
 </locale>
 

@@ -59,6 +59,8 @@ class EditorialReminderSettingsForm extends Form
         $this->setData('round2Warning', $settings['round2Warning']);
         $this->setData('copyeditingWarning', $settings['copyeditingWarning']);
         $this->setData('timezone', $settings['timezone']);
+        $this->setData('workingDays', $settings['workingDays']);
+        $this->setData('workingDaysMap', $settings['workingDaysMap']);
         $this->setData('directorUsernames', $settings['directorUsernames']);
         $this->setData('enableDailyDigest', $settings['enableDailyDigest']);
         $this->setData('enableWeeklyDigest', $settings['enableWeeklyDigest']);
@@ -71,7 +73,7 @@ class EditorialReminderSettingsForm extends Form
      */
     public function readInputData()
     {
-        $this->readUserVars(['round1Limit', 'round2Limit', 'round1Warning', 'round2Warning', 'copyeditingWarning', 'timezone', 'directorUsernames', 'enableDailyDigest', 'enableWeeklyDigest']);
+        $this->readUserVars(['round1Limit', 'round2Limit', 'round1Warning', 'round2Warning', 'copyeditingWarning', 'timezone', 'workingDays', 'directorUsernames', 'enableDailyDigest', 'enableWeeklyDigest']);
         parent::readInputData();
     }
 
@@ -104,6 +106,7 @@ class EditorialReminderSettingsForm extends Form
         $request = Application::get()->getRequest();
         $user = $request->getUser();
         $ctxId = $this->contextId;
+        $service = new EditorialReminderService($this->plugin);
 
         $round1Limit = max(14, min(21, (int) $this->getData('round1Limit') ?: 21));
         $round2Limit = max(1, (int) $this->getData('round2Limit') ?: 7);
@@ -111,6 +114,7 @@ class EditorialReminderSettingsForm extends Form
         $round2Warning = max(1, (int) $this->getData('round2Warning') ?: 2);
         $copyeditingWarning = max(1, (int) $this->getData('copyeditingWarning') ?: 10);
         $timezone = trim((string) $this->getData('timezone')) ?: 'Asia/Jakarta';
+        $workingDays = $service->normalizeWorkingDays($this->getData('workingDays'));
         $enableDailyDigest = (bool) $this->getData('enableDailyDigest');
         $enableWeeklyDigest = (bool) $this->getData('enableWeeklyDigest');
 
@@ -120,6 +124,7 @@ class EditorialReminderSettingsForm extends Form
         $this->plugin->updateSetting($ctxId, 'round2Warning', $round2Warning, 'int');
         $this->plugin->updateSetting($ctxId, 'copyeditingWarning', $copyeditingWarning, 'int');
         $this->plugin->updateSetting($ctxId, 'timezone', $timezone, 'string');
+        $this->plugin->updateSetting($ctxId, 'workingDays', implode(',', $workingDays), 'string');
         $this->plugin->updateSetting($ctxId, 'enableDailyDigest', $enableDailyDigest, 'bool');
         $this->plugin->updateSetting($ctxId, 'enableWeeklyDigest', $enableWeeklyDigest, 'bool');
 
@@ -141,6 +146,7 @@ class EditorialReminderSettingsForm extends Form
                     'round2Warning' => $round2Warning,
                     'copyeditingWarning' => $copyeditingWarning,
                     'timezone' => $timezone,
+                    'workingDays' => implode(',', $workingDays),
                 ]),
             );
         }

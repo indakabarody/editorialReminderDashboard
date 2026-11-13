@@ -547,5 +547,36 @@ msgstr "Des"
 msgid "plugins.generic.editorialReminderDashboard.audit.details"
 msgstr "Detail"
 
+msgid "plugins.generic.editorialReminderDashboard.settings.workingDays"
+msgstr "Hari Kerja Aktif"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.workingDaysDesc"
+msgstr "Pilih hari dalam seminggu yang dihitung sebagai hari kerja untuk Review Round 1 & Round 2+ (default: Senin sampai Jumat)."
+
+msgid "plugins.generic.editorialReminderDashboard.error.minOneWorkingDay"
+msgstr "Minimal pilih 1 hari kerja aktif."
+
+msgid "plugins.generic.editorialReminderDashboard.day.1"
+msgstr "Senin"
+
+msgid "plugins.generic.editorialReminderDashboard.day.2"
+msgstr "Selasa"
+
+msgid "plugins.generic.editorialReminderDashboard.day.3"
+msgstr "Rabu"
+
+msgid "plugins.generic.editorialReminderDashboard.day.4"
+msgstr "Kamis"
+
+msgid "plugins.generic.editorialReminderDashboard.day.5"
+msgstr "Jumat"
+
+msgid "plugins.generic.editorialReminderDashboard.day.6"
+msgstr "Sabtu"
+
+msgid "plugins.generic.editorialReminderDashboard.day.7"
+msgstr "Minggu"
+
+
 
 

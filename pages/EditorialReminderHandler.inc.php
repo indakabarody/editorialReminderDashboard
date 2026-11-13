@@ -587,6 +587,7 @@ class EditorialReminderHandler extends Handler
         $round2Warning = max(1, (int) $request->getUserVar('round2Warning') ?: 2);
         $copyeditingWarning = max(1, (int) $request->getUserVar('copyeditingWarning') ?: 10);
         $timezone = trim((string) $request->getUserVar('timezone')) ?: 'Asia/Jakarta';
+        $workingDays = $service->normalizeWorkingDays($request->getUserVar('workingDays'));
         $enableDailyDigest = (int) $request->getUserVar('enableDailyDigest') === 1;
         $enableWeeklyDigest = (int) $request->getUserVar('enableWeeklyDigest') === 1;
 
@@ -596,6 +597,7 @@ class EditorialReminderHandler extends Handler
         $plugin->updateSetting($targetContextId, 'round2Warning', $round2Warning, 'int');
         $plugin->updateSetting($targetContextId, 'copyeditingWarning', $copyeditingWarning, 'int');
         $plugin->updateSetting($targetContextId, 'timezone', $timezone, 'string');
+        $plugin->updateSetting($targetContextId, 'workingDays', implode(',', $workingDays), 'string');
         $plugin->updateSetting($targetContextId, 'enableDailyDigest', $enableDailyDigest, 'bool');
         $plugin->updateSetting($targetContextId, 'enableWeeklyDigest', $enableWeeklyDigest, 'bool');
 
@@ -617,6 +619,7 @@ class EditorialReminderHandler extends Handler
                 'round2Warning' => $round2Warning,
                 'copyeditingWarning' => $copyeditingWarning,
                 'timezone' => $timezone,
+                'workingDays' => implode(',', $workingDays),
             ]),
         );
 

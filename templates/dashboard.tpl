@@ -17,6 +17,7 @@
 	data-save-holiday-url="{$saveHolidayUrl|escape}"
 	data-delete-holiday-url="{$deleteHolidayUrl|escape}"
 	data-save-settings-url="{$saveSettingsUrl|escape}"
+	data-min-working-day-msg="{translate|escape key="plugins.generic.editorialReminderDashboard.error.minOneWorkingDay"}"
 	data-csrf-token="{$csrfToken|escape}">
 
 	{* Top Dark Teal Banner matching Mockup Page 1 *}
@@ -498,6 +499,19 @@
 									<label for="erTimezone">{translate key="plugins.generic.editorialReminderDashboard.settings.timezone"}</label>
 									<input type="text" id="erTimezone" name="timezone" class="er-input" value="{$settings.timezone|escape}" />
 								</div>
+							</div>
+
+							<div class="er-form-group er-form-group--full">
+								<label>{translate key="plugins.generic.editorialReminderDashboard.settings.workingDays"}</label>
+								<div class="er-weekdays-grid">
+									{foreach from=[1,2,3,4,5,6,7] item=dayNum}
+										<label class="er-weekday-check">
+											<input type="checkbox" name="workingDays[]" value="{$dayNum}" class="er-working-day-checkbox" {if !empty($settings.workingDaysMap[$dayNum])}checked{/if} />
+											<span>{translate key="plugins.generic.editorialReminderDashboard.day.`$dayNum`"}</span>
+										</label>
+									{/foreach}
+								</div>
+								<small>{translate key="plugins.generic.editorialReminderDashboard.settings.workingDaysDesc"}</small>
 							</div>
 
 							<div class="er-form-checks">

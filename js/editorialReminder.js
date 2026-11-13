@@ -184,8 +184,25 @@
 				var fd = new FormData(modalSettingsForm);
 				var payload = { csrfToken: csrfToken };
 				fd.forEach(function (v, k) {
-					payload[k] = v;
+					if (k !== 'workingDays[]') {
+						payload[k] = v;
+					}
 				});
+
+				var dayCheckboxes = modalSettingsForm.querySelectorAll('.er-working-day-checkbox');
+				if (dayCheckboxes.length > 0) {
+					var selectedDays = [];
+					dayCheckboxes.forEach(function (cb) {
+						if (cb.checked) {
+							selectedDays.push(cb.value);
+						}
+					});
+					if (selectedDays.length === 0) {
+						alert(root.getAttribute('data-min-working-day-msg') || 'Minimal pilih 1 hari kerja aktif.');
+						return;
+					}
+					payload.workingDays = selectedDays.join(',');
+				}
 
 				postFormUrlEncoded(saveSettingsUrl, payload).then(function (res) {
 					if (res && res.ok) {

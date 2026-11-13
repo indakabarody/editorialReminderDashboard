@@ -547,3 +547,34 @@ msgstr "Dec"
 msgid "plugins.generic.editorialReminderDashboard.audit.details"
 msgstr "Details"
 
+msgid "plugins.generic.editorialReminderDashboard.settings.workingDays"
+msgstr "Active Working Days"
+
+msgid "plugins.generic.editorialReminderDashboard.settings.workingDaysDesc"
+msgstr "Select the days of the week counted as working days for Review Round 1 & Round 2+ calculations (default: Monday through Friday)."
+
+msgid "plugins.generic.editorialReminderDashboard.error.minOneWorkingDay"
+msgstr "Please select at least one active working day."
+
+msgid "plugins.generic.editorialReminderDashboard.day.1"
+msgstr "Monday"
+
+msgid "plugins.generic.editorialReminderDashboard.day.2"
+msgstr "Tuesday"
+
+msgid "plugins.generic.editorialReminderDashboard.day.3"
+msgstr "Wednesday"
+
+msgid "plugins.generic.editorialReminderDashboard.day.4"
+msgstr "Thursday"
+
+msgid "plugins.generic.editorialReminderDashboard.day.5"
+msgstr "Friday"
+
+msgid "plugins.generic.editorialReminderDashboard.day.6"
+msgstr "Saturday"
+
+msgid "plugins.generic.editorialReminderDashboard.day.7"
+msgstr "Sunday"
+
+

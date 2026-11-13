@@ -8,25 +8,29 @@
  * @class WorkingDayCalculator
  * @ingroup plugins_generic_editorialReminderDashboard
  *
- * @brief Calculates working days (Monday-Friday excluding configured holidays),
- * due dates, review status, and copyediting target issue status.
+ * @brief Calculates working days (configurable days of week, defaulting to Monday-Friday,
+ * excluding configured holidays), due dates, review status, and copyediting target issue status.
  */
 
 class WorkingDayCalculator
 {
-	/** @var array<string, bool> Map of 'Y-m-d' => true for excluded holidays */
-	protected $_holidayMap = [];
+    /** @var array<string, bool> Map of 'Y-m-d' => true for excluded holidays */
+    protected $_holidayMap = [];
 
-	/** @var DateTimeZone Active timezone for calculations */
-	protected $_timeZone;
+    /** @var DateTimeZone Active timezone for calculations */
+    protected $_timeZone;
+
+    /** @var array<int, bool> Map of ISO-8601 day of week (1=Mon .. 7=Sun) => true */
+    protected $_workingDaysMap = [];
 
     /**
      * Constructor.
      *
      * @param array $holidayDates List of holiday date strings ('Y-m-d')
      * @param string|null $timezoneName Timezone identifier (default 'Asia/Jakarta')
+     * @param array|string|null $workingDays Active ISO-8601 working days (1=Mon .. 7=Sun), default [1, 2, 3, 4, 5]
      */
-    public function __construct($holidayDates = [], $timezoneName = 'Asia/Jakarta')
+    public function __construct($holidayDates = [], $timezoneName = 'Asia/Jakarta', $workingDays = [1, 2, 3, 4, 5])
     {
         foreach ((array) $holidayDates as $dateStr) {
             if (!empty($dateStr)) {
@@ -35,11 +39,44 @@ class WorkingDayCalculator
             }
         }
 
+        if (is_string($workingDays)) {
+            $workingDays = preg_split('/[\s,]+/', trim($workingDays), -1, PREG_SPLIT_NO_EMPTY);
+        }
+
+        if (is_array($workingDays)) {
+            foreach ($workingDays as $d) {
+                $dayInt = (int) $d;
+                if ($dayInt >= 1 && $dayInt <= 7) {
+                    $this->_workingDaysMap[$dayInt] = true;
+                }
+            }
+        }
+
+        if (empty($this->_workingDaysMap)) {
+            $this->_workingDaysMap = [
+                1 => true,
+                2 => true,
+                3 => true,
+                4 => true,
+                5 => true,
+            ];
+        }
+
         try {
             $this->_timeZone = new DateTimeZone($timezoneName ?: 'Asia/Jakarta');
         } catch (Exception $e) {
             $this->_timeZone = new DateTimeZone('Asia/Jakarta');
         }
+    }
+
+    /**
+     * Get the list of configured working days (ISO-8601: 1=Mon .. 7=Sun).
+     *
+     * @return array<int>
+     */
+    public function getWorkingDays()
+    {
+        return array_keys($this->_workingDaysMap);
     }
 
     /**
@@ -67,168 +104,171 @@ class WorkingDayCalculator
         return $now->format('Y-m-d');
     }
 
-	/**
-	 * Determine whether a given date ('Y-m-d' or DateTimeInterface) is a working day.
-	 * Working days are Monday (1) through Friday (5) and not present in the holiday table.
-	 *
-	 * @param DateTimeInterface|string $date
-	 * @return bool
-	 */
-	public function isWorkingDay($date)
-	{
-		$dt = $date instanceof DateTimeInterface ? clone $date : new DateTime(substr((string) $date, 0, 10), $this->_timeZone);
+    /**
+     * Determine whether a given date ('Y-m-d' or DateTimeInterface) is a working day.
+     * Working days are the configured ISO-8601 days of week (default Monday 1 through Friday 5)
+     * and not present in the holiday table.
+     *
+     * @param DateTimeInterface|string $date
+     * @return bool
+     */
+    public function isWorkingDay($date)
+    {
+        $dt = $date instanceof DateTimeInterface ? clone $date : new DateTime(substr((string) $date, 0, 10), $this->_timeZone);
 
-		$dayOfWeek = (int) $dt->format('N'); // 1 (Mon) .. 7 (Sun)
-		if ($dayOfWeek >= 6) {
-			return false;
-		}
+        $dayOfWeek = (int) $dt->format('N'); // 1 (Mon) .. 7 (Sun)
+        if (!isset($this->_workingDaysMap[$dayOfWeek])) {
+            return false;
+        }
 
-		$ymd = $dt->format('Y-m-d');
-		if (isset($this->_holidayMap[$ymd])) {
-			return false;
-		}
+        $ymd = $dt->format('Y-m-d');
+        if (isset($this->_holidayMap[$ymd])) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * Add $workingDays working days to $startDate.
-	 * Day 1 of the count is the first working day strictly after $startDate.
-	 * Example: Start Thu 2026-10-08 + 21 working days = Fri 2026-11-06.
-	 *
-	 * @param string $startDate Date string ('Y-m-d' or 'Y-m-d H:i:s')
-	 * @param int $workingDays Number of working days to add
-	 * @return string Due date in 'Y-m-d' format
-	 */
-	public function addWorkingDays($startDate, $workingDays)
-	{
-		$dt = new DateTime(substr((string) $startDate, 0, 10), $this->_timeZone);
-		$remaining = max(0, (int) $workingDays);
+    /**
+     * Add $workingDays working days to $startDate.
+     * Day 1 of the count is the first working day strictly after $startDate.
+     * Example: Start Thu 2026-10-08 + 21 working days = Fri 2026-11-06.
+     *
+     * @param string $startDate Date string ('Y-m-d' or 'Y-m-d H:i:s')
+     * @param int $workingDays Number of working days to add
+     * @return string Due date in 'Y-m-d' format
+     */
+    public function addWorkingDays($startDate, $workingDays)
+    {
+        $dt = new DateTime(substr((string) $startDate, 0, 10), $this->_timeZone);
+        $remaining = max(0, (int) $workingDays);
+        $safety = 0;
 
-		while ($remaining > 0) {
-			$dt->modify('+1 day');
-			if ($this->isWorkingDay($dt)) {
-				$remaining--;
-			}
-		}
+        while ($remaining > 0 && $safety < 3660) {
+            $dt->modify('+1 day');
+            $safety++;
+            if ($this->isWorkingDay($dt)) {
+                $remaining--;
+            }
+        }
 
-		return $dt->format('Y-m-d');
-	}
+        return $dt->format('Y-m-d');
+    }
 
-	/**
-	 * Count working days strictly after $startDate up to and including $endDate.
-	 * If $endDate <= $startDate, returns 0.
-	 *
-	 * @param string $startDate Start date ('Y-m-d')
-	 * @param string $endDate End date ('Y-m-d')
-	 * @return int Number of working days elapsed
-	 */
-	public function countWorkingDaysBetween($startDate, $endDate)
-	{
-		$startYmd = substr((string) $startDate, 0, 10);
-		$endYmd = substr((string) $endDate, 0, 10);
+    /**
+     * Count working days strictly after $startDate up to and including $endDate.
+     * If $endDate <= $startDate, returns 0.
+     *
+     * @param string $startDate Start date ('Y-m-d')
+     * @param string $endDate End date ('Y-m-d')
+     * @return int Number of working days elapsed
+     */
+    public function countWorkingDaysBetween($startDate, $endDate)
+    {
+        $startYmd = substr((string) $startDate, 0, 10);
+        $endYmd = substr((string) $endDate, 0, 10);
 
-		if ($endYmd <= $startYmd) {
-			return 0;
-		}
+        if ($endYmd <= $startYmd) {
+            return 0;
+        }
 
-		$cursor = new DateTime($startYmd, $this->_timeZone);
-		$target = new DateTime($endYmd, $this->_timeZone);
-		$count = 0;
+        $cursor = new DateTime($startYmd, $this->_timeZone);
+        $target = new DateTime($endYmd, $this->_timeZone);
+        $count = 0;
 
-		while ($cursor < $target) {
-			$cursor->modify('+1 day');
-			if ($this->isWorkingDay($cursor)) {
-				$count++;
-			}
-		}
+        while ($cursor < $target) {
+            $cursor->modify('+1 day');
+            if ($this->isWorkingDay($cursor)) {
+                $count++;
+            }
+        }
 
-		return $count;
-	}
+        return $count;
+    }
 
-	/**
-	 * Evaluate review round status, due date, and remaining/overdue working days.
-	 *
-	 * @param string $startDate Round start date ('Y-m-d' or datetime)
-	 * @param int $limitWorkingDays Maximum working days for the round (e.g. 21 for Round 1, 7 for Round 2+)
-	 * @param int $warningWorkingDays Almost-due threshold in working days (e.g. 3 for Round 1, 2 for Round 2+)
-	 * @param string|null $referenceDate Optional reference date ('Y-m-d') instead of today
-	 * @return array {
-	 *   startDate: string,
-	 *   dueDate: string,
-	 *   elapsedWorkingDays: int,
-	 *   remainingWorkingDays: int,
-	 *   overdueWorkingDays: int,
-	 *   status: string ('normal'|'almost_due'|'overdue'),
-	 *   urgencyScore: int
-	 * }
-	 */
-	public function evaluateReviewRound($startDate, $limitWorkingDays, $warningWorkingDays, $referenceDate = null)
-	{
-		$startYmd = substr((string) $startDate, 0, 10);
-		$todayYmd = $this->getTodayDateString($referenceDate);
-		$dueYmd = $this->addWorkingDays($startYmd, $limitWorkingDays);
-		$elapsed = $this->countWorkingDaysBetween($startYmd, $todayYmd);
+    /**
+     * Evaluate review round status, due date, and remaining/overdue working days.
+     *
+     * @param string $startDate Round start date ('Y-m-d' or datetime)
+     * @param int $limitWorkingDays Maximum working days for the round (e.g. 21 for Round 1, 7 for Round 2+)
+     * @param int $warningWorkingDays Almost-due threshold in working days (e.g. 3 for Round 1, 2 for Round 2+)
+     * @param string|null $referenceDate Optional reference date ('Y-m-d') instead of today
+     * @return array {
+     *   startDate: string,
+     *   dueDate: string,
+     *   elapsedWorkingDays: int,
+     *   remainingWorkingDays: int,
+     *   overdueWorkingDays: int,
+     *   status: string ('normal'|'almost_due'|'overdue'),
+     *   urgencyScore: int
+     * }
+     */
+    public function evaluateReviewRound($startDate, $limitWorkingDays, $warningWorkingDays, $referenceDate = null)
+    {
+        $startYmd = substr((string) $startDate, 0, 10);
+        $todayYmd = $this->getTodayDateString($referenceDate);
+        $dueYmd = $this->addWorkingDays($startYmd, $limitWorkingDays);
+        $elapsed = $this->countWorkingDaysBetween($startYmd, $todayYmd);
 
-		if ($todayYmd <= $dueYmd) {
-			$remaining = $this->countWorkingDaysBetween($todayYmd, $dueYmd);
-			$overdue = 0;
-			$status = $remaining <= (int) $warningWorkingDays ? 'almost_due' : 'normal';
-			// Higher urgencyScore = more urgent
-			$urgencyScore = $status === 'almost_due' ? 5000 - $remaining : 1000 - $remaining;
-		} else {
-			$remaining = 0;
-			$overdue = $this->countWorkingDaysBetween($dueYmd, $todayYmd);
-			if ($overdue >= 1) {
-				$status = 'overdue';
-				$urgencyScore = 10000 + $overdue;
-			} else {
-				// Due date was on Friday and today is weekend/holiday before next working day
-				$status = 'almost_due';
-				$urgencyScore = 5000;
-			}
-		}
+        if ($todayYmd <= $dueYmd) {
+            $remaining = $this->countWorkingDaysBetween($todayYmd, $dueYmd);
+            $overdue = 0;
+            $status = $remaining <= (int) $warningWorkingDays ? 'almost_due' : 'normal';
+            // Higher urgencyScore = more urgent
+            $urgencyScore = $status === 'almost_due' ? 5000 - $remaining : 1000 - $remaining;
+        } else {
+            $remaining = 0;
+            $overdue = $this->countWorkingDaysBetween($dueYmd, $todayYmd);
+            if ($overdue >= 1) {
+                $status = 'overdue';
+                $urgencyScore = 10000 + $overdue;
+            } else {
+                // Due date was on Friday and today is weekend/holiday before next working day
+                $status = 'almost_due';
+                $urgencyScore = 5000;
+            }
+        }
 
-		return [
-			'startDate' => $startYmd,
-			'dueDate' => $dueYmd,
-			'elapsedWorkingDays' => $elapsed,
-			'remainingWorkingDays' => $remaining,
-			'overdueWorkingDays' => $overdue,
-			'status' => $status,
-			'urgencyScore' => $urgencyScore,
-		];
-	}
+        return [
+            'startDate' => $startYmd,
+            'dueDate' => $dueYmd,
+            'elapsedWorkingDays' => $elapsed,
+            'remainingWorkingDays' => $remaining,
+            'overdueWorkingDays' => $overdue,
+            'status' => $status,
+            'urgencyScore' => $urgencyScore,
+        ];
+    }
 
-	/**
-	 * Evaluate Copyediting stage status based on target publication date H in calendar days.
-	 *
-	 * @param string|null $targetDate Target issue publication date H ('Y-m-d') or null if not assigned
-	 * @param int $reminderCalendarDays Reminder threshold in calendar days before H (default 10 for H-10)
-	 * @param string|null $referenceDate Optional reference date ('Y-m-d') instead of today
-	 * @return array {
-	 *   targetDate: string|null,
-	 *   diffCalendarDays: int|null,
-	 *   remainingCalendarDays: int|null,
-	 *   overdueCalendarDays: int|null,
-	 *   isDueToday: bool,
-	 *   status: string ('normal'|'almost_due'|'overdue'|'no_target'),
-	 *   urgencyScore: int
-	 * }
-	 */
-	public function evaluateCopyediting($targetDate, $reminderCalendarDays = 10, $referenceDate = null)
-	{
-		if (empty($targetDate)) {
-			return [
-				'targetDate' => null,
-				'diffCalendarDays' => null,
-				'remainingCalendarDays' => null,
-				'overdueCalendarDays' => null,
-				'isDueToday' => false,
-				'status' => 'no_target',
-				'urgencyScore' => 2500, // Highlighted above normal articles so it is not missed
-			];
-		}
+    /**
+     * Evaluate Copyediting stage status based on target publication date H in calendar days.
+     *
+     * @param string|null $targetDate Target issue publication date H ('Y-m-d') or null if not assigned
+     * @param int $reminderCalendarDays Reminder threshold in calendar days before H (default 10 for H-10)
+     * @param string|null $referenceDate Optional reference date ('Y-m-d') instead of today
+     * @return array {
+     *   targetDate: string|null,
+     *   diffCalendarDays: int|null,
+     *   remainingCalendarDays: int|null,
+     *   overdueCalendarDays: int|null,
+     *   isDueToday: bool,
+     *   status: string ('normal'|'almost_due'|'overdue'|'no_target'),
+     *   urgencyScore: int
+     * }
+     */
+    public function evaluateCopyediting($targetDate, $reminderCalendarDays = 10, $referenceDate = null)
+    {
+        if (empty($targetDate)) {
+            return [
+                'targetDate' => null,
+                'diffCalendarDays' => null,
+                'remainingCalendarDays' => null,
+                'overdueCalendarDays' => null,
+                'isDueToday' => false,
+                'status' => 'no_target',
+                'urgencyScore' => 2500, // Highlighted above normal articles so it is not missed
+            ];
+        }
 
         $targetYmd = substr((string) $targetDate, 0, 10);
         $todayYmd = $this->getTodayDateString($referenceDate);
