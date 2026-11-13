@@ -347,12 +347,76 @@ class EditorialReminderDashboardPlugin extends GenericPlugin
     }
 
     /**
+     * Determine whether the currently logged-in user is a Site Administrator
+     * or a Journal Manager in the active context (excluding Journal Editor and Production Editor).
+     *
+     * @param PKPRequest|null $request
+     * @return bool
+     */
+    protected function _isCurrentUserAdminOrJournalManager($request = null)
+    {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        if (!$request) {
+            return false;
+        }
+
+        $user = $request->getUser();
+        if (!$user) {
+            return false;
+        }
+
+        if (Validation::isSiteAdmin()) {
+            return true;
+        }
+
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $this->import('classes.EditorialReminderService');
+        $service = new EditorialReminderService($this);
+        $flags = $service->getDAO()->getUserContextRoleFlags((int) $user->getId(), (int) $context->getId());
+
+        return !empty($flags['isSiteAdmin']) || !empty($flags['isManager']);
+    }
+
+    /**
+     * Hide this plugin from the Plugins management grid (`Settings > Website > Plugins`)
+     * for non-admin, non-Journal Manager users (such as Journal Editors who share ROLE_ID_MANAGER in OJS 3.3).
+     *
+     * @copydoc Plugin::getHideManagement()
+     */
+    public function getHideManagement()
+    {
+        return !$this->_isCurrentUserAdminOrJournalManager();
+    }
+
+    /**
+     * @copydoc LazyLoadPlugin::getCanEnable()
+     */
+    public function getCanEnable()
+    {
+        return $this->_isCurrentUserAdminOrJournalManager() && parent::getCanEnable();
+    }
+
+    /**
+     * @copydoc LazyLoadPlugin::getCanDisable()
+     */
+    public function getCanDisable()
+    {
+        return $this->_isCurrentUserAdminOrJournalManager() && parent::getCanDisable();
+    }
+
+    /**
      * @copydoc Plugin::getActions()
      */
     public function getActions($request, $actionArgs)
     {
         $actions = parent::getActions($request, $actionArgs);
-        if (!$this->getEnabled()) {
+        if (!$this->getEnabled() || !$this->_isCurrentUserAdminOrJournalManager($request)) {
             return $actions;
         }
 
@@ -394,17 +458,7 @@ class EditorialReminderDashboardPlugin extends GenericPlugin
             return parent::manage($args, $request);
         }
 
-        $context = $request->getContext();
-        $isSiteAdmin = Validation::isSiteAdmin();
-        $isManager = false;
-        if ($context) {
-            $this->import('classes.EditorialReminderService');
-            $service = new EditorialReminderService($this);
-            $flags = $service->getDAO()->getUserContextRoleFlags((int) $user->getId(), (int) $context->getId());
-            $isManager = !empty($flags['isManager']);
-        }
-
-        if (!$isSiteAdmin && !$isManager) {
+        if (!$this->_isCurrentUserAdminOrJournalManager($request)) {
             return new JSONMessage(false, __('plugins.generic.editorialReminderDashboard.error.accessDenied'));
         }
 

@@ -88,13 +88,25 @@ class EditorialReminderDigestTask extends ScheduledTask
 
             // Weekly digest on Mondays to Journal Managers
             if ($isMonday && !empty($settings['enableWeeklyDigest'])) {
-                $managerRows = Capsule::table('user_user_groups as uug')
-                    ->join('user_groups as ug', 'uug.user_group_id', '=', 'ug.user_group_id')
-                    ->join('users as u', 'uug.user_id', '=', 'u.user_id')
-                    ->select(['u.user_id', 'u.email'])
-                    ->where('ug.context_id', '=', $jid)
-                    ->where('ug.role_id', '=', 16)
+                $managerGroupRows = Capsule::table('user_groups')
+                    ->select(['user_group_id'])
+                    ->where('context_id', '=', $jid)
+                    ->where('role_id', '=', 16)
                     ->get();
+
+                $candidateGroupIds = [];
+                foreach ($managerGroupRows as $mgrRow) {
+                    $candidateGroupIds[] = (int) $mgrRow->user_group_id;
+                }
+                $jmGroupIds = $dao->filterJournalManagerUserGroupIds($candidateGroupIds);
+
+                $managerRows = !empty($jmGroupIds)
+                    ? Capsule::table('user_user_groups as uug')
+                        ->join('users as u', 'uug.user_id', '=', 'u.user_id')
+                        ->select(['u.user_id', 'u.email'])
+                        ->whereIn('uug.user_group_id', $jmGroupIds)
+                        ->get()
+                    : [];
 
                 $sentEmails = [];
                 foreach ($managerRows as $mr) {

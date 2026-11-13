@@ -20,13 +20,13 @@ Distributed under the GNU GPL v3. For full terms see the file `LICENSE`.
   - Stores completed review rounds in `editorial_reminder_round_history` and calculates cumulative working days across all rounds.
   - Displays detailed reviewer statuses, OJS native overdue indicators, and automatic delay cause diagnosis (waiting for reviewers, waiting for editor decision, or no reviewers assigned).
 - **Copyediting & Target Issue Monitoring**:
-  - Allows Journal Managers and Editors to assign an unpublished **Target Issue** to each Copyediting article.
+  - Allows Site Administrators and Journal Managers to assign a **Target Issue** (Future Issue or Back Issue) to each Copyediting article.
   - Tracks Target Publication Date (`H`) per issue, defaulting to the last day of the issue's month.
   - Evaluates calendar-day reminders (`Normal` > H-10, `Almost due` H-10..H-1, `Due today` H+0, `Overdue` past H+n, and `No target issue`).
   - Records full audit logs of Target Issue changes.
 - **Per-Journal & Site-Level (Publishing House) Dashboards**:
-  - **Journal Dashboard**: Summary cards, stage tabs (`All`, `Review`, `Copyediting`), search, filters (`Status`, `Editor`, `Issue`, `Sort`), expandable reviewer and round history panels, and direct links to OJS editorial workflow. Section Editors automatically see only articles assigned to them.
-  - **Publishing House Dashboard (Site-Level)**: Aggregated totals across all hosted journals, per-journal status distribution bar, and most urgent articles across journals for Site Administrators and designated Directors.
+  - **Journal Dashboard**: Accessible exclusively to **Site Administrators** and **Journal Managers** (hidden from Journal Editors, Production Editors, and Section Editors). Provides summary cards, stage tabs (`All`, `Review`, `Copyediting`), search, filters (`Status`, `Editor`, `Issue`, `Sort`), expandable reviewer and round history panels, and direct links to OJS editorial workflow.
+  - **Publishing House Dashboard (Site-Level)**: Aggregated totals across all hosted journals, per-journal status distribution bar, and most urgent articles across journals for **Site Administrators**.
 - **Multi-Format Exports**:
   - Exports active filtered views to native **Excel (`.xlsx`)** (multi-sheet with Sheet 1: Articles/Recap + Metadata Header, Sheet 2: Reviewer Details), **CSV (`.csv`)** (UTF-8 with BOM), and **PDF (`.pdf`)** (Landscape A4 report).
 - **Scheduled Email Digests**:

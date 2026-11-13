@@ -98,15 +98,15 @@ class EditorialReminderDAO extends DAO
         return $journals;
     }
 
-	/**
-	 * Fetch active monitored submissions (Review & Copyediting stages) for one or more journals.
-	 * Only reads queued (active) submissions that have completed initial submission progress.
-	 *
-	 * @param int|array $contextIds Journal ID or array of Journal IDs
-	 * @param int|null $assignedEditorId Optional user ID filter for Section Editor
-	 * @param string $locale Current UI locale
-	 * @return array Batch data structure containing submissions and related records
-	 */
+    /**
+     * Fetch active monitored submissions (Review & Copyediting stages) for one or more journals.
+     * Only reads queued (active) submissions that have completed initial submission progress.
+     *
+     * @param int|array $contextIds Journal ID or array of Journal IDs
+     * @param int|null $assignedEditorId Optional user ID filter for Section Editor
+     * @param string $locale Current UI locale
+     * @return array Batch data structure containing submissions and related records
+     */
     public function getMonitoredSubmissionsBatch($contextIds, $assignedEditorId = null, $locale = 'en_US')
     {
         $this->ensureSchema();
@@ -269,19 +269,19 @@ class EditorialReminderDAO extends DAO
             }
         }
 
-		// 7. Target Issue Change Logs
-		$targetLogRows = Capsule::table('editorial_reminder_target_issue_logs')->whereIn('submission_id', $submissionIds)->orderBy('date_changed', 'desc')->get();
+        // 7. Target Issue Change Logs
+        $targetLogRows = Capsule::table('editorial_reminder_target_issue_logs')->whereIn('submission_id', $submissionIds)->orderBy('date_changed', 'desc')->get();
 
-		$targetLogsBySub = [];
-		foreach ($targetLogRows as $tl) {
-			$targetLogsBySub[(int) $tl->submission_id][] = $tl;
-			if (!empty($tl->changed_by)) {
-				$userIds[(int) $tl->changed_by] = true;
-			}
-		}
+        $targetLogsBySub = [];
+        foreach ($targetLogRows as $tl) {
+            $targetLogsBySub[(int) $tl->submission_id][] = $tl;
+            if (!empty($tl->changed_by)) {
+                $userIds[(int) $tl->changed_by] = true;
+            }
+        }
 
-		// 8. Stored Round History
-		$historyRows = Capsule::table('editorial_reminder_round_history')->whereIn('submission_id', $submissionIds)->orderBy('round', 'asc')->get();
+        // 8. Stored Round History
+        $historyRows = Capsule::table('editorial_reminder_round_history')->whereIn('submission_id', $submissionIds)->orderBy('round', 'asc')->get();
 
         $roundHistoryBySub = [];
         foreach ($historyRows as $hr) {
@@ -885,11 +885,19 @@ class EditorialReminderDAO extends DAO
     }
 
     /**
-     * Check whether a user is only a Section Editor in the given context (not Site Admin or Journal Manager).
+     * Check whether a user is a Site Administrator, Journal Manager, Journal Editor, or Section Editor
+     * in the given context.
+     *
+     * Note on OJS 3.3 architecture:
+     * In OJS 3.3 (`registry/userGroups.xml`), Journal Manager (`default.groups.name.manager`),
+     * Journal Editor (`default.groups.name.editor`), and Production Editor (`default.groups.name.productionEditor`)
+     * all share `role_id = 16` (`ROLE_ID_MANAGER`). To distinguish true Journal Managers from
+     * Journal Editors and Production Editors, we inspect `user_group_settings` (`nameLocaleKey`,
+     * `abbrevLocaleKey`, `name`, and `abbrev`).
      *
      * @param int $userId
      * @param int $contextId
-     * @return array {isSiteAdmin: bool, isManager: bool, isSubEditor: bool}
+     * @return array {isSiteAdmin: bool, isManager: bool, isJournalEditor: bool, isSubEditor: bool}
      */
     public function getUserContextRoleFlags($userId, $contextId)
     {
@@ -898,14 +906,17 @@ class EditorialReminderDAO extends DAO
 
         $rows = Capsule::table('user_user_groups as uug')
             ->join('user_groups as ug', 'uug.user_group_id', '=', 'ug.user_group_id')
-            ->select(['ug.role_id', 'ug.context_id'])
+            ->select(['ug.user_group_id', 'ug.role_id', 'ug.context_id'])
             ->where('uug.user_id', '=', $uid)
             ->whereIn('ug.context_id', [0, $ctxId])
             ->get();
 
         $isSiteAdmin = false;
         $isManager = false;
+        $isJournalEditor = false;
         $isSubEditor = false;
+
+        $managerRoleGroupIds = [];
 
         foreach ($rows as $r) {
             $roleId = (int) $r->role_id;
@@ -913,19 +924,200 @@ class EditorialReminderDAO extends DAO
                 // ROLE_ID_SITE_ADMIN
                 $isSiteAdmin = true;
             } elseif ($roleId === 16 && (int) $r->context_id === $ctxId) {
-                // ROLE_ID_MANAGER
-                $isManager = true;
+                // ROLE_ID_MANAGER (shared by Journal Manager, Journal Editor, and Production Editor in OJS 3.3)
+                $managerRoleGroupIds[] = (int) $r->user_group_id;
             } elseif ($roleId === 17 && (int) $r->context_id === $ctxId) {
                 // ROLE_ID_SUB_EDITOR
                 $isSubEditor = true;
             }
         }
 
+        if (!empty($managerRoleGroupIds)) {
+            $jmGroupIds = $this->filterJournalManagerUserGroupIds($managerRoleGroupIds);
+            foreach ($managerRoleGroupIds as $ugId) {
+                if (in_array($ugId, $jmGroupIds, true)) {
+                    $isManager = true;
+                } else {
+                    $isJournalEditor = true;
+                }
+            }
+        }
+
         return [
             'isSiteAdmin' => $isSiteAdmin,
             'isManager' => $isManager,
+            'isJournalEditor' => $isJournalEditor,
             'isSubEditor' => $isSubEditor,
         ];
+    }
+
+    /**
+     * Filter a list of `role_id = 16` (`ROLE_ID_MANAGER`) user group IDs and return only those
+     * that represent the actual Journal Manager user group (excluding Journal Editor and Production Editor).
+     *
+     * @param array $userGroupIds Array of `user_group_id` integers with `role_id = 16`
+     * @return array<int> Filtered list of `user_group_id` integers that are Journal Manager groups
+     */
+    public function filterJournalManagerUserGroupIds($userGroupIds)
+    {
+        if (empty($userGroupIds)) {
+            return [];
+        }
+
+        $cleanIds = array_values(array_unique(array_map('intval', $userGroupIds)));
+        $settingRows = Capsule::table('user_group_settings')
+            ->whereIn('user_group_id', $cleanIds)
+            ->whereIn('setting_name', ['nameLocaleKey', 'abbrevLocaleKey', 'name', 'abbrev'])
+            ->get();
+
+        $settingsByGroup = [];
+        foreach ($settingRows as $sr) {
+            $ugId = (int) $sr->user_group_id;
+            $sName = (string) $sr->setting_name;
+            $sVal = trim((string) $sr->setting_value);
+            if ($sName === 'nameLocaleKey' || $sName === 'abbrevLocaleKey') {
+                $settingsByGroup[$ugId][$sName] = $sVal;
+            } else {
+                $settingsByGroup[$ugId][$sName][] = strtolower($sVal);
+            }
+        }
+
+        $jmGroupIds = [];
+        foreach ($cleanIds as $ugId) {
+            $gSettings = isset($settingsByGroup[$ugId]) ? $settingsByGroup[$ugId] : [];
+            $nameLocaleKey = isset($gSettings['nameLocaleKey']) ? $gSettings['nameLocaleKey'] : '';
+            $abbrevLocaleKey = isset($gSettings['abbrevLocaleKey']) ? $gSettings['abbrevLocaleKey'] : '';
+
+            // 1. Standard OJS 3.3 user groups installed from registry/userGroups.xml
+            if ($nameLocaleKey !== '' || $abbrevLocaleKey !== '') {
+                if ($nameLocaleKey === 'default.groups.name.manager' || $abbrevLocaleKey === 'default.groups.abbrev.manager') {
+                    $jmGroupIds[] = $ugId;
+                }
+                continue;
+            }
+
+            // 2. Fallback for custom role_id=16 groups created without nameLocaleKey
+            $names = isset($gSettings['name']) ? $gSettings['name'] : [];
+            $abbrevs = isset($gSettings['abbrev']) ? $gSettings['abbrev'] : [];
+
+            $hasEditorKeyword = false;
+            $hasManagerKeyword = false;
+
+            foreach ($names as $n) {
+                if (strpos($n, 'editor') !== false || strpos($n, 'redaktur') !== false || strpos($n, 'penyunting') !== false) {
+                    $hasEditorKeyword = true;
+                }
+                if (strpos($n, 'journal manager') !== false || strpos($n, 'manajer jurnal') !== false || strpos($n, 'pengelola jurnal') !== false || $n === 'manager' || $n === 'manajer') {
+                    $hasManagerKeyword = true;
+                }
+            }
+
+            if (!$hasManagerKeyword) {
+                foreach ($abbrevs as $ab) {
+                    if ($ab === 'jm' || $ab === 'mj') {
+                        $hasManagerKeyword = true;
+                    }
+                    if ($ab === 'je' || $ab === 'ej' || $ab === 'prode' || $ab === 'ep') {
+                        $hasEditorKeyword = true;
+                    }
+                }
+            }
+
+            if ($hasManagerKeyword && !$hasEditorKeyword) {
+                $jmGroupIds[] = $ugId;
+            }
+        }
+
+        return $jmGroupIds;
+    }
+
+    /**
+     * Filter a list of `role_id = 16` (`ROLE_ID_MANAGER`) user group IDs and return only those
+     * that represent the actual Journal Manager user group (excluding Journal Editor and Production Editor).
+     *
+     * @param array $userGroupIds Array of `user_group_id` integers with `role_id = 16`
+     * @return array<int> Filtered list of `user_group_id` integers that are Journal Manager groups
+     */
+    public function filterJournalManagerUserGroupIds($userGroupIds)
+    {
+        if (empty($userGroupIds)) {
+            return [];
+        }
+
+        $cleanIds = array_values(array_unique(array_map('intval', $userGroupIds)));
+        $settingRows = Capsule::table('user_group_settings')
+            ->whereIn('user_group_id', $cleanIds)
+            ->whereIn('setting_name', ['nameLocaleKey', 'abbrevLocaleKey', 'name', 'abbrev'])
+            ->get();
+
+        $settingsByGroup = [];
+        foreach ($settingRows as $sr) {
+            $ugId = (int) $sr->user_group_id;
+            $sName = (string) $sr->setting_name;
+            $sVal = trim((string) $sr->setting_value);
+            if ($sName === 'nameLocaleKey' || $sName === 'abbrevLocaleKey') {
+                $settingsByGroup[$ugId][$sName] = $sVal;
+            } else {
+                $settingsByGroup[$ugId][$sName][] = strtolower($sVal);
+            }
+        }
+
+        $jmGroupIds = [];
+        foreach ($cleanIds as $ugId) {
+            $gSettings = isset($settingsByGroup[$ugId]) ? $settingsByGroup[$ugId] : [];
+            $nameLocaleKey = isset($gSettings['nameLocaleKey']) ? $gSettings['nameLocaleKey'] : '';
+            $abbrevLocaleKey = isset($gSettings['abbrevLocaleKey']) ? $gSettings['abbrevLocaleKey'] : '';
+
+            // 1. Standard OJS 3.3 user groups installed from registry/userGroups.xml
+            if ($nameLocaleKey !== '' || $abbrevLocaleKey !== '') {
+                if (
+                    $nameLocaleKey === 'default.groups.name.manager' ||
+                    $abbrevLocaleKey === 'default.groups.abbrev.manager'
+                ) {
+                    $jmGroupIds[] = $ugId;
+                }
+                continue;
+            }
+
+            // 2. Fallback for custom role_id=16 groups created without nameLocaleKey
+            $names = isset($gSettings['name']) ? $gSettings['name'] : [];
+            $abbrevs = isset($gSettings['abbrev']) ? $gSettings['abbrev'] : [];
+
+            $hasEditorKeyword = false;
+            $hasManagerKeyword = false;
+
+            foreach ($names as $n) {
+                if (strpos($n, 'editor') !== false || strpos($n, 'redaktur') !== false || strpos($n, 'penyunting') !== false) {
+                    $hasEditorKeyword = true;
+                }
+                if (
+                    strpos($n, 'journal manager') !== false ||
+                    strpos($n, 'manajer jurnal') !== false ||
+                    strpos($n, 'pengelola jurnal') !== false ||
+                    $n === 'manager' ||
+                    $n === 'manajer'
+                ) {
+                    $hasManagerKeyword = true;
+                }
+            }
+
+            if (!$hasManagerKeyword) {
+                foreach ($abbrevs as $ab) {
+                    if ($ab === 'jm' || $ab === 'mj') {
+                        $hasManagerKeyword = true;
+                    }
+                    if ($ab === 'je' || $ab === 'ej' || $ab === 'prode' || $ab === 'ep') {
+                        $hasEditorKeyword = true;
+                    }
+                }
+            }
+
+            if ($hasManagerKeyword && !$hasEditorKeyword) {
+                $jmGroupIds[] = $ugId;
+            }
+        }
+
+        return $jmGroupIds;
     }
 
     /**
